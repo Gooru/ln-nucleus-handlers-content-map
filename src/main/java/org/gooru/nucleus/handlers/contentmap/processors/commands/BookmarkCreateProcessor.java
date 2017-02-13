@@ -1,6 +1,7 @@
 package org.gooru.nucleus.handlers.contentmap.processors.commands;
 
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorContext;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.RepoBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponse;
 
 /**
@@ -18,8 +19,7 @@ class BookmarkCreateProcessor extends AbstractCommandProcessor {
 
     @Override
     protected MessageResponse processCommand() {
-        // return RepoBuilder.buildBookmarkRepo(context).createBookmarkHandler();
-        throw new AssertionError("Not implemented");
+        return RepoBuilder.buildBookmarkRepo(context).createBookmark();
     }
 
 }
