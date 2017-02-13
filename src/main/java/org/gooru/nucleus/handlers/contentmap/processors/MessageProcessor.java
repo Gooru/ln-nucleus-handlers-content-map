@@ -4,8 +4,8 @@ import java.util.ResourceBundle;
 
 import org.gooru.nucleus.handlers.contentmap.constants.MessageConstants;
 import org.gooru.nucleus.handlers.contentmap.processors.commands.CommandProcessorBuilder;
+import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageResponseWrapperException;
 import org.gooru.nucleus.handlers.contentmap.processors.exceptions.VersionDeprecatedException;
-import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponse;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponseFactory;
 import org.gooru.nucleus.handlers.contentmap.processors.utils.ValidationHelperUtils;
@@ -33,12 +33,12 @@ class MessageProcessor implements Processor {
     public MessageResponse process() {
 
         try {
-            ExecutionResult<MessageResponse> validateResult = validateAndInitialize();
-            if (validateResult.isCompleted()) {
-                return validateResult.result();
-            }
+            validateAndInitialize();
             final String msgOp = message.headers().get(MessageConstants.MSG_HEADER_OP);
             return CommandProcessorBuilder.lookupBuilder(msgOp).build(createContext()).process();
+        } catch (MessageResponseWrapperException mrwe) {
+            LOGGER.error("Context validation failed");
+            return mrwe.getMessageResponse();
         } catch (VersionDeprecatedException e) {
             LOGGER.error("Version is deprecated");
             return MessageResponseFactory.createVersionDeprecatedResponse();
@@ -54,39 +54,47 @@ class MessageProcessor implements Processor {
         return new ProcessorContext.ProcessorContextBuilder(userId, session, request, headers).build();
     }
 
-    private ExecutionResult<MessageResponse> validateAndInitialize() {
-        if (message == null) {
-            LOGGER.error("Invalid message received, either null or body of message is not JsonObject ");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createInvalidRequestResponse(RESOURCE_BUNDLE.getString("invalid.payload")),
-                ExecutionResult.ExecutionStatus.FAILED);
-        }
-
+    private void validateAndInitialize() {
         userId = message.body().getString(MessageConstants.MSG_USER_ID);
-        if (!ValidationHelperUtils.validateUser(userId)) {
-            LOGGER.error("Invalid user id passed. Not authorized.");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("invalid.user")),
-                ExecutionResult.ExecutionStatus.FAILED);
-        }
         session = message.body().getJsonObject(MessageConstants.MSG_KEY_SESSION);
         request = message.body().getJsonObject(MessageConstants.MSG_HTTP_BODY);
 
+        validateMessage();
+        validateUser();
+        validateSession();
+        validateRequest();
+    }
+
+    private void validateMessage() {
+        if (message == null) {
+            LOGGER.error("Invalid message received, either null or body of message is not JsonObject ");
+            throw new MessageResponseWrapperException(
+                MessageResponseFactory.createInvalidRequestResponse(RESOURCE_BUNDLE.getString("invalid.payload")));
+        }
+    }
+
+    private void validateUser() {
+        if (!ValidationHelperUtils.validateUser(userId)) {
+            LOGGER.error("Invalid user id passed. Not authorized.");
+            throw new MessageResponseWrapperException(
+                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("invalid.user")));
+        }
+    }
+
+    private void validateSession() {
         if (session == null || session.isEmpty()) {
             LOGGER.error("Invalid session obtained, probably not authorized properly");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("invalid.session")),
-                ExecutionResult.ExecutionStatus.FAILED);
+            throw new MessageResponseWrapperException(
+                MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("invalid.session")));
         }
+    }
 
+    private void validateRequest() {
         if (request == null) {
             LOGGER.error("Invalid JSON payload on Message Bus");
-            return new ExecutionResult<>(
-                MessageResponseFactory.createInvalidRequestResponse(RESOURCE_BUNDLE.getString("invalid.payload")),
-                ExecutionResult.ExecutionStatus.FAILED);
+            throw new MessageResponseWrapperException(
+                MessageResponseFactory.createInvalidRequestResponse(RESOURCE_BUNDLE.getString("invalid.payload")));
         }
-
-        return new ExecutionResult<>(null, ExecutionResult.ExecutionStatus.CONTINUE_PROCESSING);
     }
 
 }
