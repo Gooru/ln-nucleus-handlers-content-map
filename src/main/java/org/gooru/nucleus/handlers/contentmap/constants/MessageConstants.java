@@ -29,7 +29,6 @@ public final class MessageConstants {
     // Operations
     public static final String MSG_OP_BOOKMARK_CREATE = "bookmark.create";
     public static final String MSG_OP_BOOKMARK_DELETE = "bookmark.delete";
-    public static final String MSG_OP_BOOKMARK_GET = "bookmark.get";
     public static final String MSG_OP_BOOKMARK_LIST = "bookmark.list";
 
     private MessageConstants() {

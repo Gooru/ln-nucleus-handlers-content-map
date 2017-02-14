@@ -29,25 +29,19 @@ public enum CommandProcessorBuilder {
             };
         }
     },
-    CLASS_CREATE(MessageConstants.MSG_OP_BOOKMARK_CREATE) {
+    BOOKMARK_CREATE(MessageConstants.MSG_OP_BOOKMARK_CREATE) {
         @Override
         public Processor build(ProcessorContext context) {
             return new BookmarkCreateProcessor(context);
         }
     },
-    CLASS_GET(MessageConstants.MSG_OP_BOOKMARK_GET) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new BookmarkGetProcessor(context);
-        }
-    },
-    CLASS_DELETE(MessageConstants.MSG_OP_BOOKMARK_DELETE) {
+    BOOKMARK_DELETE(MessageConstants.MSG_OP_BOOKMARK_DELETE) {
         @Override
         public Processor build(ProcessorContext context) {
             return new BookmarkDeleteProcessor(context);
         }
     },
-    CLASS_LIST(MessageConstants.MSG_OP_BOOKMARK_LIST) {
+    BOOKMARK_LIST(MessageConstants.MSG_OP_BOOKMARK_LIST) {
         @Override
         public Processor build(ProcessorContext context) {
             return new BookmarkListProcessor(context);

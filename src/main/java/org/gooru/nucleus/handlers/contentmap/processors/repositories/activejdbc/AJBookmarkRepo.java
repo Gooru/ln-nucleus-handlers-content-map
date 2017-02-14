@@ -31,9 +31,4 @@ class AJBookmarkRepo implements BookmarkRepo {
     public MessageResponse listBookmark() {
         return TransactionExecutor.executeTransaction(DBHandlerBuilder.buildListBookmarkHandler(context));
     }
-
-    @Override
-    public MessageResponse getBookmark() {
-        return TransactionExecutor.executeTransaction(DBHandlerBuilder.buildGetBookmarkHandler(context));
-    }
 }

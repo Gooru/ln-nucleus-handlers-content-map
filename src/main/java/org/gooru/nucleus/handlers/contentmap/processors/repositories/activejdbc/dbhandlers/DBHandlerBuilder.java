@@ -15,10 +15,6 @@ public final class DBHandlerBuilder {
         return new CreateBookmarkHandler(context);
     }
 
-    public static DBHandler buildGetBookmarkHandler(ProcessorContext context) {
-        return new GetBookmarkHandler(context);
-    }
-
     public static DBHandler buildListBookmarkHandler(ProcessorContext context) {
         return new ListBookmarkHandler(context);
     }
