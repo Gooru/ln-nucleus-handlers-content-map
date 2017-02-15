@@ -33,6 +33,7 @@ public class AJEntityBookmark extends Model {
 
     private static final Map<String, FieldValidator> validatorRegistry;
     private static final Map<String, FieldConverter> converterRegistry;
+    public static final String FETCH_UNDELETED_BOOKMARK_QUERY = "id = ?::uuid and is_deleted = ?";
 
     static {
         validatorRegistry = initializeValidators();
@@ -121,6 +122,10 @@ public class AJEntityBookmark extends Model {
 
     public void setUserId(String userId) {
         this.setFieldUsingConverter(USER_ID, userId);
+    }
+
+    public void setDeleted() {
+        this.setBoolean(IS_DELETED, true);
     }
 
     private void setFieldUsingConverter(String fieldName, Object fieldValue) {

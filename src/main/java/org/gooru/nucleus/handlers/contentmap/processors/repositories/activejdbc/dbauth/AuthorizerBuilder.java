@@ -17,4 +17,8 @@ public final class AuthorizerBuilder {
         // As long as session token is valid and user is not anonymous, this is ok
         return model -> new ExecutionResult<>(null, ExecutionResult.ExecutionStatus.CONTINUE_PROCESSING);
     }
+
+    public static Authorizer<AJEntityBookmark> buildDeleteBookmarkAuthorizer(ProcessorContext context) {
+        return new BookmarkOwnerAuthorizer(context);
+    }
 }

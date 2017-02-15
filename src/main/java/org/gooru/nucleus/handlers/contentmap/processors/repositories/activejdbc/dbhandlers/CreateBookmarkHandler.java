@@ -4,6 +4,7 @@ import java.util.ResourceBundle;
 
 import org.gooru.nucleus.handlers.contentmap.constants.MessageConstants;
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorContext;
+import org.gooru.nucleus.handlers.contentmap.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageResponseWrapperException;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityBookmark;
@@ -53,9 +54,10 @@ class CreateBookmarkHandler implements DBHandler {
         new DefaultAJEntityBookmarkBuilder()
             .build(bookmark, this.context.request(), AJEntityBookmark.getConverterRegistry());
 
-        AJEntityBookmark.createBookmark(bookmark);
-
-        return null;
+        String bookmarkId = AJEntityBookmark.createBookmark(bookmark);
+        return new ExecutionResult<>(MessageResponseFactory
+            .createCreatedResponse(bookmarkId, EventBuilderFactory.getCreateBookmarkEventBuilder(bookmarkId)),
+            ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
 
     @Override

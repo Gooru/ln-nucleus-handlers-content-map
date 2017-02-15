@@ -30,6 +30,7 @@ public final class MessageConstants {
     public static final String MSG_OP_BOOKMARK_CREATE = "bookmark.create";
     public static final String MSG_OP_BOOKMARK_DELETE = "bookmark.delete";
     public static final String MSG_OP_BOOKMARK_LIST = "bookmark.list";
+    public static final String BOOKMARK_ID = "bookmarkId";
 
     private MessageConstants() {
         throw new AssertionError();
