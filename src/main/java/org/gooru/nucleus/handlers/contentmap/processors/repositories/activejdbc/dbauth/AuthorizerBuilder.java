@@ -21,4 +21,8 @@ public final class AuthorizerBuilder {
     public static Authorizer<AJEntityBookmark> buildDeleteBookmarkAuthorizer(ProcessorContext context) {
         return new BookmarkOwnerAuthorizer(context);
     }
+
+    public static Authorizer<AJEntityBookmark> buildListBookmarkAuthorizer(ProcessorContext context) {
+        return model -> new ExecutionResult<>(null, ExecutionResult.ExecutionStatus.CONTINUE_PROCESSING);
+    }
 }

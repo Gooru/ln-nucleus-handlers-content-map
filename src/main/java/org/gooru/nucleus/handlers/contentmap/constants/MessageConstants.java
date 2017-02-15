@@ -31,6 +31,9 @@ public final class MessageConstants {
     public static final String MSG_OP_BOOKMARK_DELETE = "bookmark.delete";
     public static final String MSG_OP_BOOKMARK_LIST = "bookmark.list";
     public static final String BOOKMARK_ID = "bookmarkId";
+    public static final String REQ_PARAM_OFFSET = "offset";
+    public static final String REQ_PARAM_LIMIT = "limit";
+    public static final String BOOKMARKS = "bookmarks";
 
     private MessageConstants() {
         throw new AssertionError();

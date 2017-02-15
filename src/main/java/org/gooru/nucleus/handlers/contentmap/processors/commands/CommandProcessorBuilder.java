@@ -62,7 +62,7 @@ public enum CommandProcessorBuilder {
 
     static {
         for (CommandProcessorBuilder builder : values()) {
-            LOOKUP.put(builder.getName(), builder);
+            LOOKUP.put(builder.name, builder);
         }
     }
 

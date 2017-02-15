@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * @author ashish on 13/2/17.
  */
-public class UtilityManager implements Initializer, Finalizer {
+public final class UtilityManager implements Initializer, Finalizer {
     private static final UtilityManager ourInstance = new UtilityManager();
 
     public static UtilityManager getInstance() {

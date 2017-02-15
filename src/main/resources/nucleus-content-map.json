@@ -9,5 +9,7 @@
     "maximumPoolSize": 5
   },
   "app.configuration": {
+    "limit.default": 20,
+    "limit.max": 50
   }
 }

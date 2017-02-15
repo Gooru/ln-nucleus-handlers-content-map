@@ -45,7 +45,7 @@ public class ContentMapVerticle extends AbstractVerticle {
                         JsonObject eventData = result.event();
                         if (eventData != null) {
                             String sessionToken =
-                                ((JsonObject) message.body()).getString(MessageConstants.MSG_HEADER_TOKEN);
+                                message.body().getString(MessageConstants.MSG_HEADER_TOKEN);
                             if (sessionToken != null && !sessionToken.isEmpty()) {
                                 eventData.put(MessageConstants.MSG_HEADER_TOKEN, sessionToken);
                             } else {

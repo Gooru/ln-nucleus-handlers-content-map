@@ -17,6 +17,7 @@ import org.javalite.activejdbc.annotations.Table;
  */
 @Table("user_bookmarks")
 public class AJEntityBookmark extends Model {
+    private static final String ID = "id";
     private static final String CONTENT_ID = "content_id";
     private static final String USER_ID = "user_id";
     private static final String CONTENT_TYPE = "content_type";
@@ -29,11 +30,13 @@ public class AJEntityBookmark extends Model {
 
     private static final List<String> CONTENT_TYPE_VALUES =
         Arrays.asList("course", "unit", "lesson", "collection", "assessment", "question", "resource");
-    public static final Set<String> CREATABLE_FIELDS = new HashSet<>(Arrays.asList(CONTENT_ID, CONTENT_TYPE, TITLE));
+    private static final Set<String> CREATABLE_FIELDS = new HashSet<>(Arrays.asList(CONTENT_ID, CONTENT_TYPE, TITLE));
 
     private static final Map<String, FieldValidator> validatorRegistry;
     private static final Map<String, FieldConverter> converterRegistry;
     public static final String FETCH_UNDELETED_BOOKMARK_QUERY = "id = ?::uuid and is_deleted = ?";
+    public static final String LIST_BOOKMARK_FOR_USER_QUERY = "user_id = ?::uuid and is_deleted = false";
+    public static final List<String> LIST_BOOKMARK_FIELDS = Arrays.asList(ID, CONTENT_ID, CONTENT_TYPE, TITLE);
 
     static {
         validatorRegistry = initializeValidators();
@@ -51,8 +54,8 @@ public class AJEntityBookmark extends Model {
         Map<String, FieldValidator> validatorMap = new HashMap<>();
         validatorMap.put(CONTENT_ID, (FieldValidator::validateUuid));
         validatorMap.put(TITLE, (value) -> FieldValidator.validateString(value, 1000));
-        validatorMap.put(CONTENT_TYPE,
-            (value) -> ((value != null) && (value instanceof String) && (CONTENT_TYPE_VALUES.contains(value))));
+        validatorMap.put(CONTENT_TYPE, (value) -> ((value != null) && (value instanceof String) && (CONTENT_TYPE_VALUES
+            .contains(value.toString()))));
         return Collections.unmodifiableMap(validatorMap);
     }
 
@@ -82,6 +85,10 @@ public class AJEntityBookmark extends Model {
     public static String createBookmark(AJEntityBookmark bookmark) {
         return createBookmark(bookmark.getContentId(), bookmark.getUserId(), bookmark.getContentType(),
             bookmark.getTitle());
+    }
+
+    public static String getSequenceFieldName() {
+        return SEQUENCE_ID;
     }
 
     public String getContentId() {
