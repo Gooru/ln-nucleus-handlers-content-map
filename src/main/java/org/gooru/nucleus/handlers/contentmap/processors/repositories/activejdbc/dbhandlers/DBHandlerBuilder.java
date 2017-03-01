@@ -23,4 +23,23 @@ public final class DBHandlerBuilder {
         return new DeleteBookmarkHandler(context);
     }
 
+    public static DBHandler buildFetchCourseMapCourseHandler(ProcessorContext context) {
+        return new FetchCourseMapCourseHandler(context);
+    }
+
+    public static DBHandler buildFetchCourseMapUnitHandler(ProcessorContext context) {
+        return new FetchCourseMapUnitHandler(context);
+    }
+
+    public static DBHandler buildFetchCourseMapLessonHandler(ProcessorContext context) {
+        return new FetchCourseMapLessonHandler(context);
+    }
+
+    public static DBHandler buildCreatePathForCourseHandler(ProcessorContext context) {
+        return new CreatePathForCourseHandler(context);
+    }
+
+    public static DBHandler buildCreatePathForClassContentHandler(ProcessorContext context) {
+        return new CreatePathForClassContentHandler(context);
+    }
 }

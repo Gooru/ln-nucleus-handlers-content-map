@@ -12,4 +12,5 @@ public interface BookmarkRepo {
     MessageResponse deleteBookmark();
 
     MessageResponse listBookmark();
+
 }

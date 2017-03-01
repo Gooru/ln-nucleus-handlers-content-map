@@ -12,6 +12,7 @@ public class MessageResponseWrapperException extends RuntimeException {
     public MessageResponseWrapperException(MessageResponse messageResponse) {
         this.messageResponse = messageResponse;
     }
+    
 
     public MessageResponse getMessageResponse() {
         return messageResponse;

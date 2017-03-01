@@ -10,6 +10,7 @@ public final class MessagebusEndpoints {
      */
     public static final String MBEP_CONTENT_MAP = "org.gooru.nucleus.message.bus.content.map";
     public static final String MBEP_EVENT = "org.gooru.nucleus.message.bus.publisher.event";
+    public static final String MBEP_COURSE = "org.gooru.nucleus.message.bus.course";
 
     private MessagebusEndpoints() {
         throw new AssertionError();

@@ -31,8 +31,8 @@ public final class DBHelper {
     public static Integer getLimitFromContext(ProcessorContext context) {
         try {
             String offsetFromRequest = readRequestParam(MessageConstants.REQ_PARAM_LIMIT, context);
-            int offset = offsetFromRequest != null ? Integer.valueOf(offsetFromRequest) :
-                AppConfiguration.getInstance().getDefaultLimit();
+            int offset = offsetFromRequest != null ? Integer.valueOf(offsetFromRequest)
+                : AppConfiguration.getInstance().getDefaultLimit();
             if (offset <= AppConfiguration.getInstance().getMaxLimit()) {
                 return offset;
             }
@@ -50,6 +50,18 @@ public final class DBHelper {
 
         String value = requestParams.getString(0);
         return (value != null && !value.isEmpty()) ? value : null;
+    }
+
+    public static String courseIdFromContext(ProcessorContext context) {
+        return context.requestHeaders().get(MessageConstants.COURSE_ID);
+    }
+
+    public static String unitIdFromContext(ProcessorContext context) {
+        return context.requestHeaders().get(MessageConstants.UNIT_ID);
+    }
+
+    public static String lessonIdFromContext(ProcessorContext context) {
+        return context.requestHeaders().get(MessageConstants.LESSON_ID);
     }
 
 }

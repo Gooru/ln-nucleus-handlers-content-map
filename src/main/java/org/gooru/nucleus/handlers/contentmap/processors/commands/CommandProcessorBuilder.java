@@ -46,6 +46,36 @@ public enum CommandProcessorBuilder {
         public Processor build(ProcessorContext context) {
             return new BookmarkListProcessor(context);
         }
+    },
+    COURSEMAP_COURSE_GET(MessageConstants.MSG_OP_COURSEMAP_COURSE_GET) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new CourseMapCourseFetchProcessor(context);
+        }
+    },
+    COURSEMAP_UNIT_GET(MessageConstants.MSG_OP_COURSEMAP_UNIT_GET) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new CourseMapUnitFetchProcessor(context);
+        }
+    },
+    COURSEMAP_LESSON_GET(MessageConstants.MSG_OP_COURSEMAP_LESSON_GET) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new CourseMapLessonFetchProcessor(context);
+        }
+    },
+    PATH_CLASS_CONTENT_CREATE(MessageConstants.MSG_OP_PATH_CLASS_CONTENT_CREATE) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new ClassContentPathCreateProcessor(context);
+        }
+    },
+    PATH_COURSE_CREATE(MessageConstants.MSG_OP_PATH_COURSE_CREATE) {
+        @Override
+        public Processor build(ProcessorContext context) {
+            return new CourseMapCourseFetchProcessor(context);
+        }
     };
 
     private String name;
