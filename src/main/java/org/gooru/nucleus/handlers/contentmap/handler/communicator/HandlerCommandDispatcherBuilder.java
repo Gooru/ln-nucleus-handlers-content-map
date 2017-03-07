@@ -13,6 +13,18 @@ public enum HandlerCommandDispatcherBuilder {
         public MessageDispatcher build(ProcessorContext context) {
             return new FetchCourseMessageDispatcher(context);
         }
+    },
+    UNIT_GET(MessageConstants.MSG_OP_COURSEMAP_UNIT_GET) {
+        @Override
+        public MessageDispatcher build(ProcessorContext context) {
+            return new FetchUnitMessageDispatcher(context);
+        }
+    },
+    LESSON_GET(MessageConstants.MSG_OP_COURSEMAP_LESSON_GET) {
+        @Override
+        public MessageDispatcher build(ProcessorContext context) {
+            return new FetchLessonMessageDispatcher(context);
+        }
     };
 
     private String name;
@@ -37,6 +49,7 @@ public enum HandlerCommandDispatcherBuilder {
         HandlerCommandDispatcherBuilder builder = LOOKUP.get(name);
         return builder;
     }
+
     public abstract MessageDispatcher build(ProcessorContext context);
 
 }

@@ -50,6 +50,8 @@ public final class MessageConstants {
     public static final String UNIT_ID = "unitId";
     public static final String LESSON_ID = "lessonId";
     public static final String COURSE_PATH = "course_path";
+    public static final String UNIT_PATH = "unit_path";
+    public static final String LESSON_PATH = "lesson_path";
     
     private MessageConstants() {
         throw new AssertionError();

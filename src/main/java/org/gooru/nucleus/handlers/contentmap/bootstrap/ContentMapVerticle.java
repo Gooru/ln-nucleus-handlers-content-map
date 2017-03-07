@@ -13,6 +13,7 @@ import org.gooru.nucleus.handlers.contentmap.handler.communicator.responses.Hand
 import org.gooru.nucleus.handlers.contentmap.processors.HandlerDispatchBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponse;
+import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,19 +45,26 @@ public class ContentMapVerticle extends AbstractVerticle {
             Future<HandlerMessageResponse> otherHandlerFuture = handlerCommunicator(message);
             CompositeFuture.<MessageResponse, HandlerMessageResponse> all(handlerFuture, otherHandlerFuture)
                 .setHandler(res -> {
-                    CombineMessageResponse result = CombineMessageResponseBuilder.build(message,
-                        (MessageResponse) handlerFuture.result(), (HandlerMessageResponse) otherHandlerFuture.result());
-                    message.reply(result.reply(), result.deliveryOptions());
-                    JsonObject eventData = result.event();
-                    if (eventData != null) {
-                        String sessionToken =
-                            ((JsonObject) message.body()).getString(MessageConstants.MSG_HEADER_TOKEN);
-                        if (sessionToken != null && !sessionToken.isEmpty()) {
-                            eventData.put(MessageConstants.MSG_HEADER_TOKEN, sessionToken);
-                        } else {
-                            LOGGER.warn("Invalid session token received");
+                    if (res.succeeded()) {
+                        CombineMessageResponse result =
+                            CombineMessageResponseBuilder.build(message, (MessageResponse) handlerFuture.result(),
+                                (HandlerMessageResponse) otherHandlerFuture.result());
+                        message.reply(result.reply(), result.deliveryOptions());
+                        JsonObject eventData = result.event();
+                        if (eventData != null) {
+                            String sessionToken =
+                                ((JsonObject) message.body()).getString(MessageConstants.MSG_HEADER_TOKEN);
+                            if (sessionToken != null && !sessionToken.isEmpty()) {
+                                eventData.put(MessageConstants.MSG_HEADER_TOKEN, sessionToken);
+                            } else {
+                                LOGGER.warn("Invalid session token received");
+                            }
+                            eb.send(MessagebusEndpoints.MBEP_EVENT, eventData);
                         }
-                        eb.send(MessagebusEndpoints.MBEP_EVENT, eventData);
+                    } else {
+                        LOGGER.error("Failed to process this command message", res.cause());
+                        MessageResponse response = MessageResponseFactory.createInternalErrorResponse();
+                        message.reply(response.reply(), response.deliveryOptions());
                     }
                 });
         });

@@ -24,6 +24,22 @@ public enum MessageResponseBuilder {
             return new CombineMessageResponse.Builder(messageResponse, handlerMessageResponse)
                 .combineKey(MessageConstants.COURSE_PATH).build();
         }
+    },
+    COURSEMAP_UNIT_GET(MessageConstants.MSG_OP_COURSEMAP_UNIT_GET) {
+        @Override
+        public CombineMessageResponse build(MessageResponse messageResponse,
+            HandlerMessageResponse handlerMessageResponse) {
+            return new CombineMessageResponse.Builder(messageResponse, handlerMessageResponse)
+                .combineKey(MessageConstants.UNIT_PATH).build();
+        }
+    },
+    COURSEMAP_LESSON_GET(MessageConstants.MSG_OP_COURSEMAP_LESSON_GET) {
+        @Override
+        public CombineMessageResponse build(MessageResponse messageResponse,
+            HandlerMessageResponse handlerMessageResponse) {
+            return new CombineMessageResponse.Builder(messageResponse, handlerMessageResponse)
+                .combineKey(MessageConstants.LESSON_PATH).build();
+        }
     };
 
     private String name;
