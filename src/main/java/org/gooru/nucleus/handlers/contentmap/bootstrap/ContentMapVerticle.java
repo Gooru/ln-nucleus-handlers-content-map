@@ -6,14 +6,23 @@ import org.gooru.nucleus.handlers.contentmap.bootstrap.startup.Initializer;
 import org.gooru.nucleus.handlers.contentmap.bootstrap.startup.Initializers;
 import org.gooru.nucleus.handlers.contentmap.constants.MessageConstants;
 import org.gooru.nucleus.handlers.contentmap.constants.MessagebusEndpoints;
+import org.gooru.nucleus.handlers.contentmap.handler.communicator.MessageDispatcher;
+import org.gooru.nucleus.handlers.contentmap.handler.communicator.responses.CombineMessageResponse;
+import org.gooru.nucleus.handlers.contentmap.handler.communicator.responses.CombineMessageResponseBuilder;
+import org.gooru.nucleus.handlers.contentmap.handler.communicator.responses.HandlerMessageResponse;
+import org.gooru.nucleus.handlers.contentmap.processors.HandlerDispatchBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponse;
+import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -24,28 +33,27 @@ public class ContentMapVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(ContentMapVerticle.class);
 
     @Override
-    public void start(Future<Void> voidFuture) throws Exception {
-
+    public void start(Future<Void> startFuture) throws Exception {
         EventBus eb = vertx.eventBus();
+        MessageConsumer<JsonObject> consumer = eb.consumer(MessagebusEndpoints.MBEP_CONTENT_MAP);
 
-        vertx.executeBlocking(blockingFuture -> {
-            startApplication();
-            blockingFuture.complete();
-        }, startApplicationFuture -> {
-            if (startApplicationFuture.succeeded()) {
-                eb.<JsonObject>consumer(MessagebusEndpoints.MBEP_CONTENT_MAP, message -> {
-                    LOGGER.debug("Received message: '{}'", message.body());
-                    vertx.executeBlocking(future -> {
-                        MessageResponse result = ProcessorBuilder.build(message).process();
-                        future.complete(result);
-                    }, res -> {
-                        MessageResponse result = (MessageResponse) res.result();
-                        LOGGER.debug("Sending response: '{}'", result.reply());
+        consumer.handler(message -> {
+            LOGGER.debug("Received message: '{}'", message.body());
+            Future<MessageResponse> handlerFuture = appInitializer().compose(result -> {
+                return commandExecutor(message);
+            });
+            Future<HandlerMessageResponse> otherHandlerFuture = handlerCommunicator(message);
+            CompositeFuture.<MessageResponse, HandlerMessageResponse> all(handlerFuture, otherHandlerFuture)
+                .setHandler(res -> {
+                    if (res.succeeded()) {
+                        CombineMessageResponse result =
+                            CombineMessageResponseBuilder.build(message, (MessageResponse) handlerFuture.result(),
+                                (HandlerMessageResponse) otherHandlerFuture.result());
                         message.reply(result.reply(), result.deliveryOptions());
                         JsonObject eventData = result.event();
                         if (eventData != null) {
                             String sessionToken =
-                                message.body().getString(MessageConstants.MSG_HEADER_TOKEN);
+                                ((JsonObject) message.body()).getString(MessageConstants.MSG_HEADER_TOKEN);
                             if (sessionToken != null && !sessionToken.isEmpty()) {
                                 eventData.put(MessageConstants.MSG_HEADER_TOKEN, sessionToken);
                             } else {
@@ -53,22 +61,71 @@ public class ContentMapVerticle extends AbstractVerticle {
                             }
                             eb.send(MessagebusEndpoints.MBEP_EVENT, eventData);
                         }
-                    });
-                }).completionHandler(result -> {
-                    if (result.succeeded()) {
-                        LOGGER.info("Class end point ready to listen");
-                        voidFuture.complete();
                     } else {
-                        LOGGER.error("Error registering the class handler. Halting the Class machinery");
-                        voidFuture.fail(result.cause());
-                        Runtime.getRuntime().halt(1);
+                        LOGGER.error("Failed to process this command message", res.cause());
+                        MessageResponse response = MessageResponseFactory.createInternalErrorResponse();
+                        message.reply(response.reply(), response.deliveryOptions());
                     }
                 });
-            } else {
-                voidFuture.fail("Not able to initialize the Class machinery properly");
-            }
         });
 
+        consumer.completionHandler(result -> {
+            if (result.succeeded()) {
+                LOGGER.info("Content map end point ready to listen");
+            } else {
+                LOGGER.error("Error registering the content map handler. Halting the content map machinery",
+                    result.cause());
+                startFuture.fail(result.cause());
+                Runtime.getRuntime().halt(1);
+            }
+        });
+    }
+
+    private Future<Void> appInitializer() {
+        Future<Void> future = Future.future();
+        vertx.<Void> executeBlocking(blockingFuture -> {
+            startApplication();
+            blockingFuture.complete();
+        }, res -> {
+            if (res.failed()) {
+                future.fail(res.cause());
+            }
+            future.complete();
+        });
+        return future;
+    }
+
+    private Future<MessageResponse> commandExecutor(Message<JsonObject> message) {
+        Future<MessageResponse> future = Future.future();
+        vertx.<MessageResponse> executeBlocking(blockingFuture -> {
+            MessageResponse result = ProcessorBuilder.build(message).process();
+            blockingFuture.complete(result);
+        }, res -> {
+            if (res.failed()) {
+                future.fail(res.cause());
+            }
+            future.complete(res.result());
+        });
+        return future;
+    }
+
+    private Future<HandlerMessageResponse> handlerCommunicator(Message<JsonObject> message) {
+        Future<HandlerMessageResponse> resultFuture = Future.future();
+        vertx.<HandlerMessageResponse> executeBlocking(future -> {
+            MessageDispatcher dispatcher = HandlerDispatchBuilder.build(message).process();
+            if (dispatcher != null) {
+                vertx.eventBus().send(dispatcher.address(), dispatcher.message(), dispatcher.options(), reply -> {
+                    HandlerMessageResponse result = new HandlerMessageResponse(reply.result());
+                    future.complete(result);
+                });
+            } else {
+                future.complete();
+            }
+
+        }, false, result -> {
+            resultFuture.complete(result.result());
+        });
+        return resultFuture;
     }
 
     @Override

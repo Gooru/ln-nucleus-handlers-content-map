@@ -12,4 +12,5 @@ public final class ProcessorBuilder {
     public static Processor build(Message<JsonObject> message) {
         return new MessageProcessor(message);
     }
+    
 }
