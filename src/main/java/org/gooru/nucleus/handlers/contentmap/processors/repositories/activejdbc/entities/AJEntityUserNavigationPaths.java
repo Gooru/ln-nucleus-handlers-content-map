@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,9 +36,9 @@ public class AJEntityUserNavigationPaths extends Model {
     private static final String CREATED_AT = "created_at";
     private static final String UPDATED_AT = "updated_at";
     public static final String PATH_ID = "path_id";
-    private static final String LESSON = "lesson";
-    private static final String COLLECTION = "collection";
-    private static final String ASSESSMENT = "assessment";
+    public static final String LESSON = "lesson";
+    public static final String COLLECTION = "collection";
+    public static final String ASSESSMENT = "assessment";
     private static final String PRE_TEST = "pre-test";
     private static final String POST_TEST = "post-test";
     private static final String BENCHMARK = "benchmark";
@@ -47,6 +48,8 @@ public class AJEntityUserNavigationPaths extends Model {
         new HashSet<>(Arrays.asList(CTX_USER_ID, CTX_COURSE_ID, CTX_UNIT_ID, CTX_LESSON_ID, CTX_COLLECTION_ID,
             CTX_CLASS_ID, PARENT_PATH_ID, PARENT_PATH_TYPE, TARGET_COURSE_ID, TARGET_UNIT_ID, TARGET_LESSON_ID,
             TARGET_COLLECTION_ID, TARGET_CONTENT_TYPE, TARGET_CONTENT_SUBTYPE, CREATED_AT, UPDATED_AT));
+    public static final List<String> RESPONSE_FIELDS = Arrays.asList(TARGET_COURSE_ID, TARGET_UNIT_ID, TARGET_LESSON_ID,
+        TARGET_COLLECTION_ID, TARGET_CONTENT_TYPE, TARGET_CONTENT_SUBTYPE);
     public static final Set<String> MANDATORY_FIELDS = new HashSet<>(Arrays.asList(TARGET_CONTENT_TYPE));
     private static final Set<String> ACCEPT_TARGET_CONTENT_TYPES =
         new HashSet<>(Arrays.asList(LESSON, COLLECTION, ASSESSMENT));
@@ -57,7 +60,7 @@ public class AJEntityUserNavigationPaths extends Model {
     private static final Map<String, FieldConverter> converterRegistry;
     public static final String FETCH_ALTERNATE_PATHS =
         "SELECT  target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, target_content_subtype from user_navigation_paths"
-            + " where ctx_course_id = ?::uuid AND ctx_unit_id = ?::uuid AND ctx_lesson_id = ?::uuid AND parent_path_type = 'alternate_path'"
+            + " where ctx_course_id = ?::uuid AND ctx_unit_id = ?::uuid AND ctx_lesson_id = ?::uuid AND parent_path_type = 'alternate-path'"
             + " group by target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, target_content_subtype";
 
     static {
