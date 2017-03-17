@@ -12,7 +12,7 @@ public class AJEntityCourse extends Model {
 
     public static final String SELECT_COURSE_TO_VALIDATE =
         "SELECT id, owner_id, publish_status, collaborator, tenant, tenant_root FROM course WHERE id = ?::uuid AND "
-            + "is_deleted = ?";
+            + "is_deleted = false";
 
     public String getTenant() {
         return this.getString(TENANT);

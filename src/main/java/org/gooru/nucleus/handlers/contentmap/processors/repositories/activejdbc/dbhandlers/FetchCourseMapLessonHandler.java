@@ -55,7 +55,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
         LazyList<AJEntityCourse> courses =
-            AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_TO_VALIDATE, courseId, false);
+            AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_TO_VALIDATE, courseId);
         if (courses.isEmpty()) {
             LOGGER.warn("course {} not found to fetch lesson, aborting", courseId);
             return new ExecutionResult<>(
@@ -64,7 +64,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
         }
 
         LazyList<AJEntityUnit> ajEntityUnit =
-            AJEntityUnit.findBySQL(AJEntityUnit.SELECT_UNIT_TO_VALIDATE, unitId, courseId, false);
+            AJEntityUnit.findBySQL(AJEntityUnit.SELECT_UNIT_TO_VALIDATE, unitId, courseId);
         if (ajEntityUnit.isEmpty()) {
             LOGGER.warn("Unit {} not found, aborting", unitId);
             return new ExecutionResult<>(
@@ -73,7 +73,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
         }
 
         LazyList<AJEntityLesson> ajEntityLesson =
-            AJEntityLesson.findBySQL(AJEntityLesson.SELECT_LESSON_TO_VALIDATE, lessonId, unitId, courseId, false);
+            AJEntityLesson.findBySQL(AJEntityLesson.SELECT_LESSON_TO_VALIDATE, lessonId, unitId, courseId);
         if (ajEntityLesson.isEmpty()) {
             LOGGER.warn("Lesson {} not found, aborting", lessonId);
             return new ExecutionResult<>(
@@ -88,6 +88,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
         JsonObject response = new JsonObject();
+        
         response.put(MessageConstants.ALTERNATE_PATHS, new JsonArray());
         return new ExecutionResult<>(MessageResponseFactory.createOkayResponse(response),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);

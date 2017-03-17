@@ -9,5 +9,7 @@ public interface CourseMapRepo {
     MessageResponse fetchCourseMapUnit();
 
     MessageResponse fetchCourseMapLesson();
+    
+    MessageResponse createPathForCourseMap();
 
 }

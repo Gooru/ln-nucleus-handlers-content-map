@@ -65,16 +65,11 @@ public enum CommandProcessorBuilder {
             return new CourseMapLessonFetchProcessor(context);
         }
     },
-    PATH_CLASS_CONTENT_CREATE(MessageConstants.MSG_OP_PATH_CLASS_CONTENT_CREATE) {
+
+    PATH_COURSE_CREATE(MessageConstants.MSG_OP_COURSEMAP_PATH_CREATE) {
         @Override
         public Processor build(ProcessorContext context) {
-            return new ClassContentPathCreateProcessor(context);
-        }
-    },
-    PATH_COURSE_CREATE(MessageConstants.MSG_OP_PATH_COURSE_CREATE) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new CourseMapCourseFetchProcessor(context);
+            return new CourseMapPathCreateProcessor(context);
         }
     };
 

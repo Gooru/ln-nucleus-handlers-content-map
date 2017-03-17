@@ -34,25 +34,22 @@ public final class MessageConstants {
     public static final String MSG_OP_COURSEMAP_COURSE_GET = "coursemap.course.get";
     public static final String MSG_OP_COURSEMAP_UNIT_GET = "coursemap.unit.get";
     public static final String MSG_OP_COURSEMAP_LESSON_GET = "coursemap.lesson.get";
-    public static final String MSG_OP_PATH_COURSE_CREATE = "path.course.create";
-    public static final String MSG_OP_PATH_CLASS_CONTENT_CREATE = "path.class.content.create";
+    public static final String MSG_OP_COURSEMAP_PATH_CREATE = "coursemap.path.create";
     public static final String MSG_OP_COURSE_GET = "course.get";
     public static final String MSG_OP_UNIT_GET = "unit.get";
     public static final String MSG_OP_LESSON_GET = "lesson.get";
-    
+
     // mics
     public static final String BOOKMARK_ID = "bookmarkId";
     public static final String REQ_PARAM_OFFSET = "offset";
     public static final String REQ_PARAM_LIMIT = "limit";
     public static final String BOOKMARKS = "bookmarks";
     public static final String ALTERNATE_PATHS = "alternate_paths";
+    public static final String COURSE_PATH = "course_path";
     public static final String COURSE_ID = "courseId";
     public static final String UNIT_ID = "unitId";
     public static final String LESSON_ID = "lessonId";
-    public static final String COURSE_PATH = "course_path";
-    public static final String UNIT_PATH = "unit_path";
-    public static final String LESSON_PATH = "lesson_path";
-    
+
     private MessageConstants() {
         throw new AssertionError();
     }

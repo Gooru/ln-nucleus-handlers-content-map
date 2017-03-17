@@ -35,11 +35,7 @@ public final class DBHandlerBuilder {
         return new FetchCourseMapLessonHandler(context);
     }
 
-    public static DBHandler buildCreatePathForCourseHandler(ProcessorContext context) {
-        return new CreatePathForCourseHandler(context);
-    }
-
-    public static DBHandler buildCreatePathForClassContentHandler(ProcessorContext context) {
-        return new CreatePathForClassContentHandler(context);
+    public static DBHandler buildCreatePathForCourseMapHandler(ProcessorContext context) {
+        return new CreatePathForCourseMapHandler(context);
     }
 }
