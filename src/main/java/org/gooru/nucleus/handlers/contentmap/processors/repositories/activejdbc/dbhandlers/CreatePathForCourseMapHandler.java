@@ -4,6 +4,7 @@ import java.util.ResourceBundle;
 
 import org.gooru.nucleus.handlers.contentmap.constants.MessageConstants;
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorContext;
+import org.gooru.nucleus.handlers.contentmap.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageResponseWrapperException;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityClass;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCollection;
@@ -187,18 +188,22 @@ class CreatePathForCourseMapHandler implements DBHandler {
     public ExecutionResult<MessageResponse> executeRequest() {
         path = new AJEntityUserNavigationPaths();
         if (parentPath != null) {
-            path.set(AJEntityUserNavigationPaths.CTX_COURSE_ID, parentPath.getCtxCourseId());
-            path.set(AJEntityUserNavigationPaths.CTX_UNIT_ID, parentPath.getCtxUnitId());
-            path.set(AJEntityUserNavigationPaths.CTX_LESSON_ID, parentPath.getCtxLessonId());
-            path.set(AJEntityUserNavigationPaths.CTX_CLASS_ID, parentPath.getCtxClassId());
+            path.set(AJEntityUserNavigationPaths.CTX_COURSE_ID, parentPath.getTargetCourseId());
+            path.set(AJEntityUserNavigationPaths.CTX_UNIT_ID, parentPath.getTargetUnitId());
+            path.set(AJEntityUserNavigationPaths.CTX_LESSON_ID, parentPath.getTargetLessonId());
             path.set(AJEntityUserNavigationPaths.PARENT_PATH_ID, parentPath.getParentPathId());
-            path.set(AJEntityUserNavigationPaths.PARENT_PATH_TYPE, parentPath.getParentPathType());
+            path.set(AJEntityUserNavigationPaths.PARENT_PATH_TYPE, AJEntityUserNavigationPaths.ALTERNATE_PATH);
+        } else {
+            path.set(AJEntityUserNavigationPaths.PARENT_PATH_TYPE, AJEntityUserNavigationPaths.COURSE_PATH);
         }
         new DefaultAJEntityUserNavigationPathsBuilder().build(this.path, context.request(),
             AJEntityUserNavigationPaths.getConverterRegistry());
         path.setUserCtxId(context.userId());
         path.save();
-        return new ExecutionResult<>(MessageResponseFactory.createOkayResponse(null),
+        String pathId = path.getId().toString();
+        return new ExecutionResult<>(
+            MessageResponseFactory.createCreatedResponse(pathId,
+                EventBuilderFactory.getCreateCourseMapPathEventBuilder(pathId)),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
 
@@ -226,11 +231,6 @@ class CreatePathForCourseMapHandler implements DBHandler {
     }
 
     private void validateMandatoryField() {
-        if ((parentPathId == null) && (ctxCourseId == null || ctxCourseId.isEmpty() || ctxUnitId == null
-            || ctxUnitId.isEmpty() || ctxLessonId == null || ctxLessonId.isEmpty())) {
-            throw new MessageResponseWrapperException(MessageResponseFactory
-                .createInvalidRequestResponse(RESOURCE_BUNDLE.getString("missing.ctxcul.or.parentpath.id")));
-        }
         if (targetCollectionId != null) {
             if (targetContentSubType == null || targetContentSubType.isEmpty()) {
                 throw new MessageResponseWrapperException(MessageResponseFactory

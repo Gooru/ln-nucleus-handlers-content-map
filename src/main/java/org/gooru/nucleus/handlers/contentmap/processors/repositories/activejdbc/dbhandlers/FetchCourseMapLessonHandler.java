@@ -10,6 +10,7 @@ import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCourse;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityLesson;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityUnit;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityUserNavigationPaths;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult.ExecutionStatus;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponse;
@@ -54,8 +55,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
-        LazyList<AJEntityCourse> courses =
-            AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_TO_VALIDATE, courseId);
+        LazyList<AJEntityCourse> courses = AJEntityCourse.findBySQL(AJEntityCourse.SELECT_COURSE_TO_VALIDATE, courseId);
         if (courses.isEmpty()) {
             LOGGER.warn("course {} not found to fetch lesson, aborting", courseId);
             return new ExecutionResult<>(
@@ -88,6 +88,8 @@ class FetchCourseMapLessonHandler implements DBHandler {
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
         JsonObject response = new JsonObject();
+        LazyList<AJEntityUserNavigationPaths> paths = AJEntityUserNavigationPaths
+            .findBySQL(AJEntityUserNavigationPaths.FETCH_ALTERNATE_PATHS, courseId, unitId, lessonId);
         
         response.put(MessageConstants.ALTERNATE_PATHS, new JsonArray());
         return new ExecutionResult<>(MessageResponseFactory.createOkayResponse(response),

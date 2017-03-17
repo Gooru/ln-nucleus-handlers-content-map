@@ -41,7 +41,8 @@ public class AJEntityUserNavigationPaths extends Model {
     private static final String PRE_TEST = "pre-test";
     private static final String POST_TEST = "post-test";
     private static final String BENCHMARK = "benchmark";
-
+    public static final String COURSE_PATH = "course-path";
+    public static final String ALTERNATE_PATH = "alternate-path";
     public static final Set<String> CREATABLE_FIELDS =
         new HashSet<>(Arrays.asList(CTX_USER_ID, CTX_COURSE_ID, CTX_UNIT_ID, CTX_LESSON_ID, CTX_COLLECTION_ID,
             CTX_CLASS_ID, PARENT_PATH_ID, PARENT_PATH_TYPE, TARGET_COURSE_ID, TARGET_UNIT_ID, TARGET_LESSON_ID,
@@ -52,9 +53,12 @@ public class AJEntityUserNavigationPaths extends Model {
     private static final Set<String> ACCEPT_TARGET_CONTENT_SUBTYPES =
         new HashSet<>(Arrays.asList(PRE_TEST, POST_TEST, BENCHMARK));
     public static final String SELECT_USER_NAVIGATION_PATHS = "id =  ?::bigint";
-
     private static final Map<String, FieldValidator> validatorRegistry;
     private static final Map<String, FieldConverter> converterRegistry;
+    public static final String FETCH_ALTERNATE_PATHS =
+        "SELECT  target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, target_content_subtype from user_navigation_paths"
+            + " where ctx_course_id = ?::uuid AND ctx_unit_id = ?::uuid AND ctx_lesson_id = ?::uuid AND parent_path_type = 'alternate_path'"
+            + " group by target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, target_content_subtype";
 
     static {
         validatorRegistry = initializeValidators();
@@ -112,16 +116,16 @@ public class AJEntityUserNavigationPaths extends Model {
         };
     }
 
-    public Object getCtxCourseId() {
-        return this.get(CTX_COURSE_ID);
+    public Object getTargetCourseId() {
+        return this.get(TARGET_COURSE_ID);
     }
 
-    public Object getCtxUnitId() {
-        return this.get(CTX_UNIT_ID);
+    public Object getTargetUnitId() {
+        return this.get(TARGET_UNIT_ID);
     }
 
-    public Object getCtxLessonId() {
-        return this.get(CTX_LESSON_ID);
+    public Object getTargetLessonId() {
+        return this.get(TARGET_LESSON_ID);
     }
 
     public Object getCtxClassId() {
