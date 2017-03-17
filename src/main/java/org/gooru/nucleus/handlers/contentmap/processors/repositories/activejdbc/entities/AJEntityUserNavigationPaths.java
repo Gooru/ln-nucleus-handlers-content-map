@@ -128,6 +128,10 @@ public class AJEntityUserNavigationPaths extends Model {
         return this.get(TARGET_LESSON_ID);
     }
 
+    public Object getTargetCollectionId() {
+        return this.get(TARGET_COLLECTION_ID);
+    }
+
     public Object getCtxClassId() {
         return this.get(CTX_CLASS_ID);
     }

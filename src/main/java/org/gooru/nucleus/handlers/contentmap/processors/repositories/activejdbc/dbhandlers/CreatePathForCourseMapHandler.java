@@ -191,6 +191,7 @@ class CreatePathForCourseMapHandler implements DBHandler {
             path.set(AJEntityUserNavigationPaths.CTX_COURSE_ID, parentPath.getTargetCourseId());
             path.set(AJEntityUserNavigationPaths.CTX_UNIT_ID, parentPath.getTargetUnitId());
             path.set(AJEntityUserNavigationPaths.CTX_LESSON_ID, parentPath.getTargetLessonId());
+            path.set(AJEntityUserNavigationPaths.CTX_COLLECTION_ID, parentPath.getTargetCollectionId());
             path.set(AJEntityUserNavigationPaths.PARENT_PATH_ID, parentPath.getParentPathId());
             path.set(AJEntityUserNavigationPaths.PARENT_PATH_TYPE, AJEntityUserNavigationPaths.ALTERNATE_PATH);
         } else {
