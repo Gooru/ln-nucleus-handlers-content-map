@@ -6,7 +6,6 @@ import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.transactions.TransactionExecutor;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponse;
 
-
 class AJCourseMapRepo implements CourseMapRepo {
 
     private final ProcessorContext context;
@@ -28,5 +27,10 @@ class AJCourseMapRepo implements CourseMapRepo {
     @Override
     public MessageResponse fetchCourseMapLesson() {
         return TransactionExecutor.executeTransaction(DBHandlerBuilder.buildFetchCourseMapLessonHandler(context));
+    }
+
+    @Override
+    public MessageResponse createPathForCourseMap() {
+        return TransactionExecutor.executeTransaction(DBHandlerBuilder.buildCreatePathForCourseMapHandler(context));
     }
 }

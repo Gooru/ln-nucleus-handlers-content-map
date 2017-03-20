@@ -3,6 +3,7 @@ package org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -104,7 +105,7 @@ public interface FieldValidator {
 
     static boolean validateUuid(Object o) {
         try {
-            UUID uuid = UUID.fromString((String) o);
+            UUID.fromString((String) o);
             return true;
         } catch (IllegalArgumentException e) {
             return false;
@@ -113,6 +114,10 @@ public interface FieldValidator {
 
     static boolean validateUuidIfPresent(String o) {
         return o == null || validateUuid(o);
+    }
+    
+    static boolean validateValueExists(String o, Set<String> acceptedFields) {
+        return o != null && acceptedFields.contains(o);
     }
 
     boolean validateField(Object value);

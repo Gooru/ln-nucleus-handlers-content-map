@@ -4,8 +4,8 @@ import org.gooru.nucleus.handlers.contentmap.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.RepoBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponse;
 
-class ClassContentPathCreateProcessor extends AbstractCommandProcessor {
-    public ClassContentPathCreateProcessor(ProcessorContext context) {
+class CourseMapPathCreateProcessor extends AbstractCommandProcessor {
+    public CourseMapPathCreateProcessor(ProcessorContext context) {
         super(context);
     }
 
@@ -16,7 +16,7 @@ class ClassContentPathCreateProcessor extends AbstractCommandProcessor {
 
     @Override
     protected MessageResponse processCommand() {
-        return RepoBuilder.buildPathRepo(context).createPathForClassContent();
+        return RepoBuilder.buildCourseMapRepo(context).createPathForCourseMap();
     }
 
 }

@@ -63,5 +63,4 @@ public final class DBHelper {
     public static String lessonIdFromContext(ProcessorContext context) {
         return context.requestHeaders().get(MessageConstants.LESSON_ID);
     }
-
 }
