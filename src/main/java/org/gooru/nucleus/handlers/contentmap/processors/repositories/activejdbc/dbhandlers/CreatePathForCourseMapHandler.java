@@ -134,34 +134,44 @@ class CreatePathForCourseMapHandler implements DBHandler {
                     MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString("course.not.found")),
                     ExecutionStatus.FAILED);
             }
-        }
 
-        if (targetUnitId != null) {
-            LazyList<AJEntityUnit> targetUnits =
-                AJEntityUnit.findBySQL(AJEntityUnit.SELECT_UNIT_TO_VALIDATE, targetUnitId, targetCourseId);
-            if (targetUnits.isEmpty()) {
-                LOGGER.warn("Target unit {} not found to fetch lesson, aborting", targetUnitId);
-                return new ExecutionResult<>(
-                    MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString("unit.not.found")),
-                    ExecutionStatus.FAILED);
+            if (targetUnitId != null) {
+                LazyList<AJEntityUnit> targetUnits =
+                    AJEntityUnit.findBySQL(AJEntityUnit.SELECT_UNIT_TO_VALIDATE, targetUnitId, targetCourseId);
+                if (targetUnits.isEmpty()) {
+                    LOGGER.warn("Target unit {} not found to fetch lesson, aborting", targetUnitId);
+                    return new ExecutionResult<>(
+                        MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString("unit.not.found")),
+                        ExecutionStatus.FAILED);
+                }
             }
-        }
 
-        if (targetLessonId != null) {
-            LazyList<AJEntityLesson> targetLessons = AJEntityLesson.findBySQL(AJEntityLesson.SELECT_LESSON_TO_VALIDATE,
-                targetLessonId, targetUnitId, targetCourseId);
-            if (targetLessons.isEmpty()) {
-                LOGGER.warn("Target lesson {} not found, aborting", targetLessonId);
-                return new ExecutionResult<>(
-                    MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString("lesson.not.found")),
-                    ExecutionStatus.FAILED);
+            if (targetLessonId != null) {
+                LazyList<AJEntityLesson> targetLessons = AJEntityLesson
+                    .findBySQL(AJEntityLesson.SELECT_LESSON_TO_VALIDATE, targetLessonId, targetUnitId, targetCourseId);
+                if (targetLessons.isEmpty()) {
+                    LOGGER.warn("Target lesson {} not found, aborting", targetLessonId);
+                    return new ExecutionResult<>(
+                        MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString("lesson.not.found")),
+                        ExecutionStatus.FAILED);
+                }
             }
-        }
 
-        if (targetCollectionId != null) {
+            if (targetCollectionId != null) {
+                LazyList<AJEntityCollection> targetCollections = AJEntityCollection.findBySQL(
+                    AJEntityCollection.SELECT_CUL_COLLECTION_TO_VALIDATE, targetCollectionId, targetLessonId,
+                    targetUnitId, targetCourseId, targetContentType, targetContentSubType);
+                if (targetCollections.isEmpty()) {
+                    LOGGER.warn("Target collection {} not found, aborting", targetCollectionId);
+                    return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(
+                        RESOURCE_BUNDLE.getString("collection.not.found")), ExecutionStatus.FAILED);
+                }
+            }
+
+        } else if (targetCollectionId != null) {
             LazyList<AJEntityCollection> targetCollections =
                 AJEntityCollection.findBySQL(AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, targetCollectionId,
-                    targetLessonId, targetUnitId, targetCourseId, targetContentType, targetContentSubType);
+                    targetContentType, targetContentSubType);
             if (targetCollections.isEmpty()) {
                 LOGGER.warn("Target collection {} not found, aborting", targetCollectionId);
                 return new ExecutionResult<>(
