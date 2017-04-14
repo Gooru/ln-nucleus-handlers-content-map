@@ -6,11 +6,11 @@ import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageRespons
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 
-public class CombineMessageResponse {
+public final class CombineMessageResponse {
 
-    private DeliveryOptions deliveryOptions;
-    private JsonObject reply;
-    private JsonObject event;
+    private final DeliveryOptions deliveryOptions;
+    private final JsonObject reply;
+    private final JsonObject event;
 
     private CombineMessageResponse(DeliveryOptions deliveryOptions, JsonObject reply, JsonObject event) {
         this.deliveryOptions = deliveryOptions;

@@ -46,8 +46,7 @@ public enum HandlerCommandDispatcherBuilder {
     }
 
     public static HandlerCommandDispatcherBuilder lookupBuilder(String name) {
-        HandlerCommandDispatcherBuilder builder = LOOKUP.get(name);
-        return builder;
+        return LOOKUP.get(name);
     }
 
     public abstract MessageDispatcher build(ProcessorContext context);

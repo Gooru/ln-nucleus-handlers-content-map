@@ -154,7 +154,7 @@ public final class MessageResponse {
             return new MessageResponse(result);
         }
 
-        private JsonObject buildErrorResponse() {
+        private static JsonObject buildErrorResponse() {
             JsonObject result =
                 new JsonObject().put(MessageConstants.MSG_OP_STATUS, MessageConstants.MSG_OP_STATUS_ERROR);
             result.put(MessageConstants.RESP_CONTAINER_MBUS,

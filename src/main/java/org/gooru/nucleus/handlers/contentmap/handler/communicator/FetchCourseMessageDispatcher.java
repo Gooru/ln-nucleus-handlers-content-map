@@ -11,8 +11,8 @@ import io.vertx.core.json.JsonObject;
 public class FetchCourseMessageDispatcher implements MessageDispatcher {
 
     private final ProcessorContext context;
-    private final String API_VERSION = "v1";
-    private DeliveryOptions options;
+    private static final String API_VERSION = "v1";
+    private final DeliveryOptions options;
 
     public FetchCourseMessageDispatcher(ProcessorContext context) {
         this.context = context;

@@ -53,9 +53,7 @@ class TenantCollaboratorAuthorizer implements Authorizer<AJEntityCourse> {
         for (TenantTree collaboratorTree : collaboratorTenantTrees) {
             ContentTenantAuthorization authorization =
                 ContentTenantAuthorizationBuilder.build(contentTenantTree, collaboratorTree, attributes);
-            if (authorization.canCollaborate()) {
-                continue;
-            } else {
+            if (!authorization.canCollaborate()) {
                 return sendError();
             }
         }
@@ -72,7 +70,7 @@ class TenantCollaboratorAuthorizer implements Authorizer<AJEntityCourse> {
         return result;
     }
 
-    private ExecutionResult<MessageResponse> sendError() {
+    private static ExecutionResult<MessageResponse> sendError() {
         return new ExecutionResult<>(
             MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString("not.found")),
             ExecutionResult.ExecutionStatus.FAILED);
