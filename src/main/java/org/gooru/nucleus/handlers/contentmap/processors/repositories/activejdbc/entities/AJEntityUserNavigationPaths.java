@@ -1,12 +1,6 @@
 package org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.converters.ConverterRegistry;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.converters.FieldConverter;
@@ -58,10 +52,18 @@ public class AJEntityUserNavigationPaths extends Model {
     public static final String SELECT_USER_NAVIGATION_PATHS = "id =  ?::bigint";
     private static final Map<String, FieldValidator> validatorRegistry;
     private static final Map<String, FieldConverter> converterRegistry;
-    public static final String FETCH_ALTERNATE_PATHS =
-        "SELECT  target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, target_content_subtype from user_navigation_paths"
-            + " where ctx_course_id = ?::uuid AND ctx_unit_id = ?::uuid AND ctx_lesson_id = ?::uuid AND parent_path_type = 'alternate-path'"
-            + " group by target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, target_content_subtype";
+    public static final String FETCH_ALTERNATE_PATHS_FOR_USER =
+        "SELECT  target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
+            + "target_content_subtype from user_navigation_paths where ctx_course_id = ?::uuid AND ctx_unit_id = "
+            + "?::uuid AND ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid and ctx_class_id is null group by "
+            + "target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
+            + "target_content_subtype";
+    public static final String FETCH_ALTERNATE_PATHS_FOR_USER_IN_CLASS =
+        "SELECT  target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
+            + "target_content_subtype from user_navigation_paths where ctx_course_id = ?::uuid AND ctx_unit_id = "
+            + "?::uuid AND ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid and ctx_class_id = ?::uuid group by "
+            + "target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
+            + "target_content_subtype";
 
     static {
         validatorRegistry = initializeValidators();

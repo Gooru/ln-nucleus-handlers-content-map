@@ -29,7 +29,7 @@ class DeleteBookmarkHandler implements DBHandler {
     private String bookmarkId;
     private AJEntityBookmark entityBookmark;
 
-    public DeleteBookmarkHandler(ProcessorContext context) {
+    DeleteBookmarkHandler(ProcessorContext context) {
         this.context = context;
     }
 

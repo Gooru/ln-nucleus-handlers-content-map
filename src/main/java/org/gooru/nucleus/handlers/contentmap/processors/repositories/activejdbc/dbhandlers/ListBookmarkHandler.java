@@ -28,7 +28,7 @@ class ListBookmarkHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ListBookmarkHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle("messages");
 
-    public ListBookmarkHandler(ProcessorContext context) {
+    ListBookmarkHandler(ProcessorContext context) {
         this.context = context;
     }
 

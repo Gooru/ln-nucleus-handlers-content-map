@@ -20,7 +20,7 @@ class FetchCourseMapCourseHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(FetchCourseMapCourseHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle("messages");
 
-    public FetchCourseMapCourseHandler(ProcessorContext context) {
+    FetchCourseMapCourseHandler(ProcessorContext context) {
         this.context = context;
     }
 
@@ -54,8 +54,8 @@ class FetchCourseMapCourseHandler implements DBHandler {
     }
 
     private void validateUser() {
-        if ((context.userId() == null) || context.userId().isEmpty()
-            || MessageConstants.MSG_USER_ANONYMOUS.equalsIgnoreCase(context.userId())) {
+        if ((context.userId() == null) || context.userId().isEmpty() || MessageConstants.MSG_USER_ANONYMOUS
+            .equalsIgnoreCase(context.userId())) {
             LOGGER.warn("Invalid user");
             throw new MessageResponseWrapperException(
                 MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("not.allowed")));
