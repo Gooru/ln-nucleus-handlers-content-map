@@ -1,8 +1,14 @@
 package org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbhelpers;
 
+import java.util.ResourceBundle;
+
 import org.gooru.nucleus.handlers.contentmap.app.components.AppConfiguration;
 import org.gooru.nucleus.handlers.contentmap.constants.MessageConstants;
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorContext;
+import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageResponseWrapperException;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityUserNavigationPaths;
+import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponseFactory;
+import org.gooru.nucleus.handlers.contentmap.processors.utils.ValidationHelperUtils;
 
 import io.vertx.core.json.JsonArray;
 
@@ -10,6 +16,7 @@ import io.vertx.core.json.JsonArray;
  * @author ashish on 15/2/17.
  */
 public final class DBHelper {
+    private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle("messages");
 
     private DBHelper() {
         throw new AssertionError();
@@ -42,7 +49,7 @@ public final class DBHelper {
         }
     }
 
-    public static String readRequestParam(String param, ProcessorContext context) {
+    private static String readRequestParam(String param, ProcessorContext context) {
         JsonArray requestParams = context.request().getJsonArray(param);
         if (requestParams == null || requestParams.isEmpty()) {
             return null;
@@ -50,6 +57,10 @@ public final class DBHelper {
 
         String value = requestParams.getString(0);
         return (value != null && !value.isEmpty()) ? value : null;
+    }
+
+    public static String classIdFromContext(ProcessorContext context) {
+        return readRequestParam(MessageConstants.CLASS_ID, context);
     }
 
     public static String courseIdFromContext(ProcessorContext context) {
@@ -63,4 +74,23 @@ public final class DBHelper {
     public static String lessonIdFromContext(ProcessorContext context) {
         return context.requestHeaders().get(MessageConstants.LESSON_ID);
     }
+
+    public static void validateIdAsUUID(String validationTarget, String bundleKey) {
+        if (validationTarget == null || validationTarget.isEmpty() || !ValidationHelperUtils
+            .validateId(validationTarget)) {
+            throw new MessageResponseWrapperException(
+                MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString(bundleKey)));
+        }
+    }
+
+    public static boolean checkContentTypeIsCollection(String contentType) {
+        return (contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.ASSESSMENT) || contentType
+            .equalsIgnoreCase(AJEntityUserNavigationPaths.COLLECTION));
+    }
+
+    public static boolean checkContentTypeIsLesson(String contentType) {
+        return contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.LESSON);
+    }
+
+
 }
