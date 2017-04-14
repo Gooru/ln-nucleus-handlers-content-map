@@ -102,7 +102,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
             .buildSimpleJsonFormatter(false, AJEntityUserNavigationPaths.RESPONSE_FIELDS).toJson(paths));
 
         JsonArray resultSet = new JsonArray();
-        if (results != null && results.size() > 0) {
+        if (results.size() > 0) {
             final List<String> lessonIds = new ArrayList<>();
             final List<String> collectionIds = new ArrayList<>();
             results.forEach(content -> {
@@ -150,7 +150,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
                 List<Map> oeQuestionCountFromDB =
                     Base.findAll(AJEntityContent.SELECT_OE_QUESTION_COUNT, collectionArrayString);
                 oeQuestionCountFromDB.stream().forEach(data -> {
-                    targetContentOtherData.getJsonObject((String) data.get(AJEntityContent.COLLECTION_ID).toString())
+                    targetContentOtherData.getJsonObject(data.get(AJEntityContent.COLLECTION_ID).toString())
                         .put(AJEntityContent.OE_QUESTION_COUNT, data.get(AJEntityContent.OE_QUESTION_COUNT));
                 });
             }
@@ -218,12 +218,12 @@ class FetchCourseMapLessonHandler implements DBHandler {
         }
     }
 
-    private boolean checkContentTypeIsCollection(String contentType) {
+    private static boolean checkContentTypeIsCollection(String contentType) {
         return (contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.ASSESSMENT)
             || contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.COLLECTION));
     }
 
-    private boolean checkContentTypeIsLesson(String contentType) {
+    private static boolean checkContentTypeIsLesson(String contentType) {
         return contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.LESSON);
     }
 }

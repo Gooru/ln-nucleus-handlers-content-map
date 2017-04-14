@@ -90,9 +90,9 @@ public class AJEntityUserNavigationPaths extends Model {
         validatorMap.put(CTX_UNIT_ID, (value -> FieldValidator.validateUuidIfPresent((String) value)));
         validatorMap.put(CTX_LESSON_ID, (value -> FieldValidator.validateUuidIfPresent((String) value)));
         validatorMap.put(CTX_CLASS_ID, (value -> FieldValidator.validateUuidIfPresent((String) value)));
-        validatorMap.put(TARGET_CONTENT_TYPE, (value -> FieldValidator.validateString(((String) value), 128)));
-        validatorMap.put(TARGET_CONTENT_SUBTYPE, (value -> FieldValidator.validateString(((String) value), 128)));
-        validatorMap.put(PARENT_PATH_TYPE, (value -> FieldValidator.validateString(((String) value), 256)));
+        validatorMap.put(TARGET_CONTENT_TYPE, (value -> FieldValidator.validateString(value, 128)));
+        validatorMap.put(TARGET_CONTENT_SUBTYPE, (value -> FieldValidator.validateString(value, 128)));
+        validatorMap.put(PARENT_PATH_TYPE, (value -> FieldValidator.validateString(value, 256)));
         validatorMap.put(CTX_COLLECTION_ID, (value -> FieldValidator.validateUuidIfPresent((String) value)));
         validatorMap.put(TARGET_COURSE_ID, (value -> FieldValidator.validateUuidIfPresent((String) value)));
         validatorMap.put(TARGET_UNIT_ID, (value -> FieldValidator.validateUuidIfPresent((String) value)));

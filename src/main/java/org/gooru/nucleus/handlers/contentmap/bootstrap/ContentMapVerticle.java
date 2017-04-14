@@ -43,17 +43,17 @@ public class ContentMapVerticle extends AbstractVerticle {
                 return commandExecutor(message);
             });
             Future<HandlerMessageResponse> otherHandlerFuture = handlerCommunicator(message);
-            CompositeFuture.<MessageResponse, HandlerMessageResponse> all(handlerFuture, otherHandlerFuture)
+            CompositeFuture.all(handlerFuture, otherHandlerFuture)
                 .setHandler(res -> {
                     if (res.succeeded()) {
                         CombineMessageResponse result =
-                            CombineMessageResponseBuilder.build(message, (MessageResponse) handlerFuture.result(),
-                                (HandlerMessageResponse) otherHandlerFuture.result());
+                            CombineMessageResponseBuilder.build(message, handlerFuture.result(),
+                                otherHandlerFuture.result());
                         message.reply(result.reply(), result.deliveryOptions());
                         JsonObject eventData = result.event();
                         if (eventData != null) {
                             String sessionToken =
-                                ((JsonObject) message.body()).getString(MessageConstants.MSG_HEADER_TOKEN);
+                                message.body().getString(MessageConstants.MSG_HEADER_TOKEN);
                             if (sessionToken != null && !sessionToken.isEmpty()) {
                                 eventData.put(MessageConstants.MSG_HEADER_TOKEN, sessionToken);
                             } else {

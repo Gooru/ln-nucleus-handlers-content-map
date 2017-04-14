@@ -8,9 +8,9 @@ import io.vertx.core.json.JsonObject;
 
 public class HandlerMessageResponse {
     private final JsonObject reply;
-    private JsonObject httpBody;
-    private String status;
-    private DeliveryOptions deliveryOptions;
+    private final JsonObject httpBody;
+    private final String status;
+    private final DeliveryOptions deliveryOptions;
 
     public HandlerMessageResponse(Message<Object> message) {
         this.reply = (JsonObject) message.body();
@@ -24,10 +24,7 @@ public class HandlerMessageResponse {
     }
 
     public boolean success() {
-        if (this.status.equalsIgnoreCase(MessageConstants.MSG_OP_STATUS_SUCCESS)) {
-            return true;
-        }
-        return false;
+        return this.status.equalsIgnoreCase(MessageConstants.MSG_OP_STATUS_SUCCESS);
     }
 
     public JsonObject reply() {
