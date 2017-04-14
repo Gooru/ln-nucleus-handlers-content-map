@@ -26,7 +26,7 @@ class CreateBookmarkHandler implements DBHandler {
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle("messages");
     private final ProcessorContext context;
 
-    public CreateBookmarkHandler(ProcessorContext context) {
+    CreateBookmarkHandler(ProcessorContext context) {
         this.context = context;
     }
 

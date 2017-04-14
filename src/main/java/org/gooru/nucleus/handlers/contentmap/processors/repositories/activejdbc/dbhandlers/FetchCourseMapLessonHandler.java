@@ -11,12 +11,7 @@ import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageRespon
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbutils.DbHelperUtil;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCollection;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityContent;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCourse;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityLesson;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityUnit;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityUserNavigationPaths;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.*;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult.ExecutionStatus;
@@ -40,7 +35,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
     private String unitId;
     private String lessonId;
 
-    public FetchCourseMapLessonHandler(ProcessorContext context) {
+    FetchCourseMapLessonHandler(ProcessorContext context) {
         this.context = context;
     }
 
@@ -98,8 +93,9 @@ class FetchCourseMapLessonHandler implements DBHandler {
         LazyList<AJEntityUserNavigationPaths> paths = AJEntityUserNavigationPaths
             .findBySQL(AJEntityUserNavigationPaths.FETCH_ALTERNATE_PATHS, courseId, unitId, lessonId);
 
-        JsonArray results = new JsonArray(JsonFormatterBuilder
-            .buildSimpleJsonFormatter(false, AJEntityUserNavigationPaths.RESPONSE_FIELDS).toJson(paths));
+        JsonArray results = new JsonArray(
+            JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUserNavigationPaths.RESPONSE_FIELDS)
+                .toJson(paths));
 
         JsonArray resultSet = new JsonArray();
         if (results.size() > 0) {
@@ -142,10 +138,10 @@ class FetchCourseMapLessonHandler implements DBHandler {
                     Base.findAll(AJEntityContent.SELECT_CONTENT_COUNT_BY_COLLECTION, collectionArrayString);
                 collectionContentCount.stream().forEach(data -> {
                     final String key = ((String) data.get(AJEntityContent.CONTENT_FORMAT))
-                        .equalsIgnoreCase(AJEntityContent.QUESTION_FORMAT) ? AJEntityContent.QUESTION_COUNT
-                            : AJEntityContent.RESOURCE_COUNT;
-                    targetContentOtherData.getJsonObject(data.get(AJEntityContent.COLLECTION_ID).toString()).put(key,
-                        data.get(AJEntityContent.CONTENT_COUNT));
+                        .equalsIgnoreCase(AJEntityContent.QUESTION_FORMAT) ? AJEntityContent.QUESTION_COUNT :
+                        AJEntityContent.RESOURCE_COUNT;
+                    targetContentOtherData.getJsonObject(data.get(AJEntityContent.COLLECTION_ID).toString())
+                        .put(key, data.get(AJEntityContent.CONTENT_COUNT));
                 });
                 List<Map> oeQuestionCountFromDB =
                     Base.findAll(AJEntityContent.SELECT_OE_QUESTION_COUNT, collectionArrayString);
@@ -177,9 +173,8 @@ class FetchCourseMapLessonHandler implements DBHandler {
             });
 
         }
-        return new ExecutionResult<>(
-            MessageResponseFactory
-                .createOkayResponse(new JsonObject().put(MessageConstants.ALTERNATE_PATHS, resultSet)),
+        return new ExecutionResult<>(MessageResponseFactory
+            .createOkayResponse(new JsonObject().put(MessageConstants.ALTERNATE_PATHS, resultSet)),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
 
@@ -210,8 +205,8 @@ class FetchCourseMapLessonHandler implements DBHandler {
     }
 
     private void validateUser() {
-        if ((context.userId() == null) || context.userId().isEmpty()
-            || MessageConstants.MSG_USER_ANONYMOUS.equalsIgnoreCase(context.userId())) {
+        if ((context.userId() == null) || context.userId().isEmpty() || MessageConstants.MSG_USER_ANONYMOUS
+            .equalsIgnoreCase(context.userId())) {
             LOGGER.warn("Invalid user");
             throw new MessageResponseWrapperException(
                 MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("not.allowed")));
@@ -219,8 +214,8 @@ class FetchCourseMapLessonHandler implements DBHandler {
     }
 
     private static boolean checkContentTypeIsCollection(String contentType) {
-        return (contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.ASSESSMENT)
-            || contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.COLLECTION));
+        return (contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.ASSESSMENT) || contentType
+            .equalsIgnoreCase(AJEntityUserNavigationPaths.COLLECTION));
     }
 
     private static boolean checkContentTypeIsLesson(String contentType) {

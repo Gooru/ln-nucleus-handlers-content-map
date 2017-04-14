@@ -6,12 +6,7 @@ import org.gooru.nucleus.handlers.contentmap.constants.MessageConstants;
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.contentmap.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageResponseWrapperException;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityClass;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCollection;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCourse;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityLesson;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityUnit;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityUserNavigationPaths;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.*;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entitybuilders.EntityBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.validators.PayloadValidator;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult;
@@ -44,7 +39,7 @@ class CreatePathForCourseMapHandler implements DBHandler {
     private AJEntityUserNavigationPaths path;
     private AJEntityUserNavigationPaths parentPath;
 
-    public CreatePathForCourseMapHandler(ProcessorContext context) {
+    CreatePathForCourseMapHandler(ProcessorContext context) {
         this.context = context;
     }
 
@@ -115,8 +110,9 @@ class CreatePathForCourseMapHandler implements DBHandler {
             parentPath = userNavigationPaths.get(0);
         }
         if (ctxCollectionId != null) {
-            LazyList<AJEntityCollection> ajEntityCollection = AJEntityCollection.findBySQL(
-                AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, ctxCollectionId, ctxLessonId, ctxUnitId, ctxCourseId);
+            LazyList<AJEntityCollection> ajEntityCollection = AJEntityCollection
+                .findBySQL(AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, ctxCollectionId, ctxLessonId, ctxUnitId,
+                    ctxCourseId);
             if (ajEntityCollection.isEmpty()) {
                 LOGGER.warn("Context collection {} not found, aborting", ctxCollectionId);
                 return new ExecutionResult<>(
@@ -158,20 +154,21 @@ class CreatePathForCourseMapHandler implements DBHandler {
             }
 
             if (targetCollectionId != null) {
-                LazyList<AJEntityCollection> targetCollections = AJEntityCollection.findBySQL(
-                    AJEntityCollection.SELECT_CUL_COLLECTION_TO_VALIDATE, targetCollectionId, targetLessonId,
-                    targetUnitId, targetCourseId, targetContentType, targetContentSubType);
+                LazyList<AJEntityCollection> targetCollections = AJEntityCollection
+                    .findBySQL(AJEntityCollection.SELECT_CUL_COLLECTION_TO_VALIDATE, targetCollectionId, targetLessonId,
+                        targetUnitId, targetCourseId, targetContentType, targetContentSubType);
                 if (targetCollections.isEmpty()) {
                     LOGGER.warn("Target collection {} not found, aborting", targetCollectionId);
-                    return new ExecutionResult<>(MessageResponseFactory.createNotFoundResponse(
-                        RESOURCE_BUNDLE.getString("collection.not.found")), ExecutionStatus.FAILED);
+                    return new ExecutionResult<>(MessageResponseFactory
+                        .createNotFoundResponse(RESOURCE_BUNDLE.getString("collection.not.found")),
+                        ExecutionStatus.FAILED);
                 }
             }
 
         } else if (targetCollectionId != null) {
-            LazyList<AJEntityCollection> targetCollections =
-                AJEntityCollection.findBySQL(AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, targetCollectionId,
-                    targetContentType, targetContentSubType);
+            LazyList<AJEntityCollection> targetCollections = AJEntityCollection
+                .findBySQL(AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, targetCollectionId, targetContentType,
+                    targetContentSubType);
             if (targetCollections.isEmpty()) {
                 LOGGER.warn("Target collection {} not found, aborting", targetCollectionId);
                 return new ExecutionResult<>(
@@ -207,14 +204,13 @@ class CreatePathForCourseMapHandler implements DBHandler {
         } else {
             path.set(AJEntityUserNavigationPaths.PARENT_PATH_TYPE, AJEntityUserNavigationPaths.COURSE_PATH);
         }
-        new DefaultAJEntityUserNavigationPathsBuilder().build(this.path, context.request(),
-            AJEntityUserNavigationPaths.getConverterRegistry());
+        new DefaultAJEntityUserNavigationPathsBuilder()
+            .build(this.path, context.request(), AJEntityUserNavigationPaths.getConverterRegistry());
         path.setUserCtxId(context.userId());
         path.save();
         String pathId = path.getId().toString();
-        return new ExecutionResult<>(
-            MessageResponseFactory.createCreatedResponse(pathId,
-                EventBuilderFactory.getCreateCourseMapPathEventBuilder(pathId)),
+        return new ExecutionResult<>(MessageResponseFactory
+            .createCreatedResponse(pathId, EventBuilderFactory.getCreateCourseMapPathEventBuilder(pathId)),
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
 
@@ -224,8 +220,8 @@ class CreatePathForCourseMapHandler implements DBHandler {
     }
 
     private void validateUser() {
-        if ((context.userId() == null) || context.userId().isEmpty()
-            || MessageConstants.MSG_USER_ANONYMOUS.equalsIgnoreCase(context.userId())) {
+        if ((context.userId() == null) || context.userId().isEmpty() || MessageConstants.MSG_USER_ANONYMOUS
+            .equalsIgnoreCase(context.userId())) {
             LOGGER.warn("Invalid user");
             throw new MessageResponseWrapperException(
                 MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("not.allowed")));
@@ -233,8 +229,9 @@ class CreatePathForCourseMapHandler implements DBHandler {
     }
 
     private void validateContextRequestFields() {
-        JsonObject errors = new DefaultPayloadValidator().validatePayload(context.request(),
-            AJEntityUserNavigationPaths.createFieldSelector(), AJEntityUserNavigationPaths.getValidatorRegistry());
+        JsonObject errors = new DefaultPayloadValidator()
+            .validatePayload(context.request(), AJEntityUserNavigationPaths.createFieldSelector(),
+                AJEntityUserNavigationPaths.getValidatorRegistry());
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             throw new MessageResponseWrapperException(MessageResponseFactory.createValidationErrorResponse(errors));
