@@ -36,63 +36,52 @@ public class ContentMapVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) throws Exception {
         EventBus eb = vertx.eventBus();
         MessageConsumer<JsonObject> consumer = eb.consumer(MessagebusEndpoints.MBEP_CONTENT_MAP);
-
-        consumer.handler(message -> {
-            LOGGER.debug("Received message: '{}'", message.body());
-            Future<MessageResponse> handlerFuture = appInitializer().compose(result -> {
-                return commandExecutor(message);
-            });
-            Future<HandlerMessageResponse> otherHandlerFuture = handlerCommunicator(message);
-            CompositeFuture.all(handlerFuture, otherHandlerFuture)
-                .setHandler(res -> {
-                    if (res.succeeded()) {
-                        CombineMessageResponse result =
-                            CombineMessageResponseBuilder.build(message, handlerFuture.result(),
-                                otherHandlerFuture.result());
-                        message.reply(result.reply(), result.deliveryOptions());
-                        JsonObject eventData = result.event();
-                        if (eventData != null) {
-                            String sessionToken =
-                                message.body().getString(MessageConstants.MSG_HEADER_TOKEN);
-                            if (sessionToken != null && !sessionToken.isEmpty()) {
-                                eventData.put(MessageConstants.MSG_HEADER_TOKEN, sessionToken);
-                            } else {
-                                LOGGER.warn("Invalid session token received");
-                            }
-                            eb.send(MessagebusEndpoints.MBEP_EVENT, eventData);
-                        }
-                    } else {
-                        LOGGER.error("Failed to process this command message", res.cause());
-                        MessageResponse response = MessageResponseFactory.createInternalErrorResponse();
-                        message.reply(response.reply(), response.deliveryOptions());
-                    }
-                });
-        });
-
-        consumer.completionHandler(result -> {
-            if (result.succeeded()) {
-                LOGGER.info("Content map end point ready to listen");
-            } else {
-                LOGGER.error("Error registering the content map handler. Halting the content map machinery",
-                    result.cause());
-                startFuture.fail(result.cause());
-                Runtime.getRuntime().halt(1);
-            }
-        });
-    }
-
-    private Future<Void> appInitializer() {
-        Future<Void> future = Future.future();
         vertx.<Void> executeBlocking(blockingFuture -> {
             startApplication();
             blockingFuture.complete();
-        }, res -> {
-            if (res.failed()) {
-                future.fail(res.cause());
+        }, startupApplicationFuture -> {
+            if (startupApplicationFuture.succeeded()) {
+                consumer.handler(message -> {
+                    LOGGER.debug("Received message: '{}'", message.body());
+                    Future<MessageResponse> handlerFuture = commandExecutor(message);
+                    Future<HandlerMessageResponse> otherHandlerFuture = handlerCommunicator(message);
+                    CompositeFuture.all(handlerFuture, otherHandlerFuture).setHandler(res -> {
+                        if (res.succeeded()) {
+                            CombineMessageResponse result = CombineMessageResponseBuilder.build(message,
+                                handlerFuture.result(), otherHandlerFuture.result());
+                            message.reply(result.reply(), result.deliveryOptions());
+                            JsonObject eventData = result.event();
+                            if (eventData != null) {
+                                String sessionToken = message.body().getString(MessageConstants.MSG_HEADER_TOKEN);
+                                if (sessionToken != null && !sessionToken.isEmpty()) {
+                                    eventData.put(MessageConstants.MSG_HEADER_TOKEN, sessionToken);
+                                } else {
+                                    LOGGER.warn("Invalid session token received");
+                                }
+                                eb.send(MessagebusEndpoints.MBEP_EVENT, eventData);
+                            }
+                        } else {
+                            LOGGER.error("Failed to process this command message", res.cause());
+                            MessageResponse response = MessageResponseFactory.createInternalErrorResponse();
+                            message.reply(response.reply(), response.deliveryOptions());
+                        }
+                    });
+                });
+
+                consumer.completionHandler(result -> {
+                    if (result.succeeded()) {
+                        LOGGER.info("Content map end point ready to listen");
+                    } else {
+                        LOGGER.error("Error registering the content map handler. Halting the content map machinery",
+                            result.cause());
+                        startFuture.fail(result.cause());
+                        Runtime.getRuntime().halt(1);
+                    }
+                });
+            } else {
+                startFuture.fail("Not able to initialize the ContentMap machinery properly");
             }
-            future.complete();
         });
-        return future;
     }
 
     private Future<MessageResponse> commandExecutor(Message<JsonObject> message) {
