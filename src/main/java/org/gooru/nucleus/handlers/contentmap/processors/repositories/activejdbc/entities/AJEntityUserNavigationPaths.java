@@ -2,6 +2,7 @@ package org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc
 
 import java.util.*;
 
+import org.gooru.nucleus.handlers.contentmap.constants.MessageConstants;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.converters.ConverterRegistry;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.converters.FieldConverter;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.validators.FieldSelector;
@@ -43,7 +44,7 @@ public class AJEntityUserNavigationPaths extends Model {
             CTX_CLASS_ID, PARENT_PATH_ID, PARENT_PATH_TYPE, TARGET_COURSE_ID, TARGET_UNIT_ID, TARGET_LESSON_ID,
             TARGET_COLLECTION_ID, TARGET_CONTENT_TYPE, TARGET_CONTENT_SUBTYPE, CREATED_AT, UPDATED_AT));
     public static final List<String> RESPONSE_FIELDS = Arrays.asList(TARGET_COURSE_ID, TARGET_UNIT_ID, TARGET_LESSON_ID,
-        TARGET_COLLECTION_ID, TARGET_CONTENT_TYPE, TARGET_CONTENT_SUBTYPE);
+        TARGET_COLLECTION_ID, TARGET_CONTENT_TYPE, TARGET_CONTENT_SUBTYPE, MessageConstants.ID);
     public static final Set<String> MANDATORY_FIELDS = new HashSet<>(Arrays.asList(TARGET_CONTENT_TYPE));
     private static final Set<String> ACCEPT_TARGET_CONTENT_TYPES =
         new HashSet<>(Arrays.asList(LESSON, COLLECTION, ASSESSMENT));
@@ -53,17 +54,13 @@ public class AJEntityUserNavigationPaths extends Model {
     private static final Map<String, FieldValidator> validatorRegistry;
     private static final Map<String, FieldConverter> converterRegistry;
     public static final String FETCH_ALTERNATE_PATHS_FOR_USER =
-        "SELECT  target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
+        "SELECT  id, target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
             + "target_content_subtype from user_navigation_paths where ctx_course_id = ?::uuid AND ctx_unit_id = "
-            + "?::uuid AND ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid and ctx_class_id is null group by "
-            + "target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
-            + "target_content_subtype";
+            + "?::uuid AND ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid and ctx_class_id is null";
     public static final String FETCH_ALTERNATE_PATHS_FOR_USER_IN_CLASS =
-        "SELECT  target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
+        "SELECT  id, target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
             + "target_content_subtype from user_navigation_paths where ctx_course_id = ?::uuid AND ctx_unit_id = "
-            + "?::uuid AND ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid and ctx_class_id = ?::uuid group by "
-            + "target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
-            + "target_content_subtype";
+            + "?::uuid AND ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid and ctx_class_id = ?::uuid";
 
     static {
         validatorRegistry = initializeValidators();
