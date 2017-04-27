@@ -35,7 +35,6 @@ class CreatePathForCourseMapHandler implements DBHandler {
     private Long parentPathId;
     private String ctxClassId;
     private String targetContentType;
-    private String targetContentSubType;
     private AJEntityUserNavigationPaths path;
     private AJEntityUserNavigationPaths parentPath;
 
@@ -54,13 +53,11 @@ class CreatePathForCourseMapHandler implements DBHandler {
             ctxLessonId = context.request().getString(AJEntityUserNavigationPaths.CTX_LESSON_ID);
             parentPathId = context.request().getLong(AJEntityUserNavigationPaths.PARENT_PATH_ID);
             targetContentType = context.request().getString(AJEntityUserNavigationPaths.TARGET_CONTENT_TYPE);
-            targetContentSubType = context.request().getString(AJEntityUserNavigationPaths.TARGET_CONTENT_SUBTYPE);
             targetCollectionId = context.request().getString(AJEntityUserNavigationPaths.TARGET_COLLECTION_ID);
             targetLessonId = context.request().getString(AJEntityUserNavigationPaths.TARGET_LESSON_ID);
             targetUnitId = context.request().getString(AJEntityUserNavigationPaths.TARGET_UNIT_ID);
             targetCourseId = context.request().getString(AJEntityUserNavigationPaths.TARGET_COURSE_ID);
             ctxClassId = context.request().getString(AJEntityUserNavigationPaths.CTX_CLASS_ID);
-            validateMandatoryField();
         } catch (MessageResponseWrapperException mrwe) {
             return new ExecutionResult<>(mrwe.getMessageResponse(), ExecutionResult.ExecutionStatus.FAILED);
         }
@@ -156,7 +153,7 @@ class CreatePathForCourseMapHandler implements DBHandler {
             if (targetCollectionId != null) {
                 LazyList<AJEntityCollection> targetCollections = AJEntityCollection
                     .findBySQL(AJEntityCollection.SELECT_CUL_COLLECTION_TO_VALIDATE, targetCollectionId, targetLessonId,
-                        targetUnitId, targetCourseId, targetContentType, targetContentSubType);
+                        targetUnitId, targetCourseId, targetContentType);
                 if (targetCollections.isEmpty()) {
                     LOGGER.warn("Target collection {} not found, aborting", targetCollectionId);
                     return new ExecutionResult<>(MessageResponseFactory
@@ -167,8 +164,7 @@ class CreatePathForCourseMapHandler implements DBHandler {
 
         } else if (targetCollectionId != null) {
             LazyList<AJEntityCollection> targetCollections = AJEntityCollection
-                .findBySQL(AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, targetCollectionId, targetContentType,
-                    targetContentSubType);
+                .findBySQL(AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, targetCollectionId, targetContentType);
             if (targetCollections.isEmpty()) {
                 LOGGER.warn("Target collection {} not found, aborting", targetCollectionId);
                 return new ExecutionResult<>(
@@ -235,15 +231,6 @@ class CreatePathForCourseMapHandler implements DBHandler {
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             throw new MessageResponseWrapperException(MessageResponseFactory.createValidationErrorResponse(errors));
-        }
-    }
-
-    private void validateMandatoryField() {
-        if (targetCollectionId != null) {
-            if (targetContentSubType == null || targetContentSubType.isEmpty()) {
-                throw new MessageResponseWrapperException(MessageResponseFactory
-                    .createInvalidRequestResponse(RESOURCE_BUNDLE.getString("missing.target.content.subtype")));
-            }
         }
     }
 
