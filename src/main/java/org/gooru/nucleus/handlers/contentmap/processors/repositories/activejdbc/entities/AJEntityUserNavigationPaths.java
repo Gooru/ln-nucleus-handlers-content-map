@@ -98,9 +98,9 @@ public class AJEntityUserNavigationPaths extends Model {
         validatorMap.put(TARGET_LESSON_ID, (value -> FieldValidator.validateUuidIfPresent((String) value)));
         validatorMap.put(TARGET_COLLECTION_ID, (value -> FieldValidator.validateUuidIfPresent((String) value)));
         validatorMap.put(TARGET_CONTENT_TYPE,
-            (value -> FieldValidator.validateValueExists((String) value, ACCEPT_TARGET_CONTENT_TYPES)));
+            (value -> FieldValidator.validateAcceptedValuesIfPresent((String) value, ACCEPT_TARGET_CONTENT_TYPES)));
         validatorMap.put(TARGET_CONTENT_SUBTYPE,
-            (value -> FieldValidator.validateValueExists((String) value, ACCEPT_TARGET_CONTENT_SUBTYPES)));
+            (value -> FieldValidator.validateAcceptedValuesIfPresent((String) value, ACCEPT_TARGET_CONTENT_SUBTYPES)));
         return Collections.unmodifiableMap(validatorMap);
     }
 
@@ -171,5 +171,5 @@ public class AJEntityUserNavigationPaths extends Model {
             return converterRegistry.get(fieldName);
         }
     }
-
+    
 }
