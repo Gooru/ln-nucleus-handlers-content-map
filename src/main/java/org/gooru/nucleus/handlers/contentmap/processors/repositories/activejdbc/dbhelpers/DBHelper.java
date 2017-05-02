@@ -91,6 +91,10 @@ public final class DBHelper {
     public static boolean checkContentTypeIsLesson(String contentType) {
         return contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.LESSON);
     }
+    
+    public static boolean checkContentTypeIsResource(String contentType) {
+        return contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.RESOURCE);
+    }
 
 
 }

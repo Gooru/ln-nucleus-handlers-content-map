@@ -11,7 +11,12 @@ import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageRespon
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbutils.DbHelperUtil;
-import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.*;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCollection;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityContent;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCourse;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityLesson;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityOriginalResource;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityUserNavigationPaths;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult.ExecutionStatus;
@@ -36,6 +41,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
     private String classId;
     private List<String> lessonIds;
     private List<String> collectionIds;
+    private List<String> resourceIds;
 
     FetchCourseMapLessonHandler(ProcessorContext context) {
         this.context = context;
@@ -87,26 +93,28 @@ class FetchCourseMapLessonHandler implements DBHandler {
     public ExecutionResult<MessageResponse> executeRequest() {
         LazyList<AJEntityUserNavigationPaths> paths = getAlternatePaths();
 
-        JsonArray navigationPathArray = new JsonArray(
-            JsonFormatterBuilder.buildSimpleJsonFormatter(false, AJEntityUserNavigationPaths.RESPONSE_FIELDS)
-                .toJson(paths));
+        JsonArray navigationPathArray = new JsonArray(JsonFormatterBuilder
+            .buildSimpleJsonFormatter(false, AJEntityUserNavigationPaths.RESPONSE_FIELDS).toJson(paths));
 
         JsonArray response = new JsonArray();
 
         if (!navigationPathArray.isEmpty()) {
             lessonIds = new ArrayList<>(navigationPathArray.size());
             collectionIds = new ArrayList<>(navigationPathArray.size());
+            resourceIds = new ArrayList<>(navigationPathArray.size());
 
-            initializePathsForCollAndLesson(navigationPathArray);
+            initializePathsForCollAndLessonAndRes(navigationPathArray);
 
-            JsonObject lessonCollectionDetailsHolder = new JsonObject();
+            JsonObject lessonCollResDetailsHolder = new JsonObject();
 
-            fetchLessonDetails(lessonCollectionDetailsHolder);
+            fetchLessonDetails(lessonCollResDetailsHolder);
 
-            fetchCollectionDetails(lessonCollectionDetailsHolder);
+            fetchCollectionDetails(lessonCollResDetailsHolder);
+
+            fetchResourceDetails(lessonCollResDetailsHolder);
 
             navigationPathArray.forEach(result -> {
-                parseAndMergeResponse(response, lessonCollectionDetailsHolder, (JsonObject) result);
+                parseAndMergeResponse(response, lessonCollResDetailsHolder, (JsonObject) result);
             });
 
         }
@@ -134,11 +142,10 @@ class FetchCourseMapLessonHandler implements DBHandler {
             List<Map> collectionContentCount =
                 Base.findAll(AJEntityContent.SELECT_CONTENT_COUNT_BY_COLLECTION, collectionArrayString);
             collectionContentCount.stream().forEach(data -> {
-                final String key = ((String) data.get(AJEntityContent.CONTENT_FORMAT))
-                    .equalsIgnoreCase(AJEntityContent.QUESTION_FORMAT) ? AJEntityContent.QUESTION_COUNT :
-                    AJEntityContent.RESOURCE_COUNT;
-                detailsResponseHolder.getJsonObject(data.get(AJEntityContent.COLLECTION_ID).toString())
-                    .put(key, data.get(AJEntityContent.CONTENT_COUNT));
+                final String key = ((String) data.get(AJEntityContent.CONTENT_FORMAT)).equalsIgnoreCase(
+                    AJEntityContent.QUESTION_FORMAT) ? AJEntityContent.QUESTION_COUNT : AJEntityContent.RESOURCE_COUNT;
+                detailsResponseHolder.getJsonObject(data.get(AJEntityContent.COLLECTION_ID).toString()).put(key,
+                    data.get(AJEntityContent.CONTENT_COUNT));
             });
             List<Map> oeQuestionCountFromDB =
                 Base.findAll(AJEntityContent.SELECT_OE_QUESTION_COUNT, collectionArrayString);
@@ -162,7 +169,21 @@ class FetchCourseMapLessonHandler implements DBHandler {
         }
     }
 
-    private void initializePathsForCollAndLesson(JsonArray results) {
+    private void fetchResourceDetails(JsonObject detailsResponseHolder) {
+        if (!resourceIds.isEmpty()) {
+            String resourceArrayString = DbHelperUtil.toPostgresArrayString(resourceIds);
+            LazyList<AJEntityOriginalResource> resources =
+                AJEntityOriginalResource.findBySQL(AJEntityOriginalResource.SELECT_RESOURCE, resourceArrayString);
+            resources.forEach(content -> {
+                JsonObject data = new JsonObject();
+                data.put(MessageConstants.TITLE, content.getString(MessageConstants.TITLE));
+                data.put(MessageConstants.THUMBNAIL, content.getString(MessageConstants.THUMBNAIL));
+                detailsResponseHolder.put(content.getString(MessageConstants.ID), data);
+            });
+        }
+    }
+
+    private void initializePathsForCollAndLessonAndRes(JsonArray results) {
         results.forEach(content -> {
             JsonObject targetContent = (JsonObject) content;
             if (DBHelper.checkContentTypeIsCollection(
@@ -171,6 +192,9 @@ class FetchCourseMapLessonHandler implements DBHandler {
             } else if (DBHelper
                 .checkContentTypeIsLesson(targetContent.getString(AJEntityUserNavigationPaths.TARGET_CONTENT_TYPE))) {
                 lessonIds.add(targetContent.getString(AJEntityUserNavigationPaths.TARGET_LESSON_ID));
+            } else if (DBHelper
+                .checkContentTypeIsResource(targetContent.getString(AJEntityUserNavigationPaths.TARGET_CONTENT_TYPE))) {
+                resourceIds.add(targetContent.getString(AJEntityUserNavigationPaths.TARGET_RESOURCE_ID));
             }
 
         });
@@ -179,13 +203,12 @@ class FetchCourseMapLessonHandler implements DBHandler {
     private LazyList<AJEntityUserNavigationPaths> getAlternatePaths() {
         LazyList<AJEntityUserNavigationPaths> paths;
         if (classId != null) {
-            paths = AJEntityUserNavigationPaths
-                .findBySQL(AJEntityUserNavigationPaths.FETCH_ALTERNATE_PATHS_FOR_USER_IN_CLASS, courseId, unitId,
-                    lessonId, context.userId(), classId);
+            paths = AJEntityUserNavigationPaths.findBySQL(
+                AJEntityUserNavigationPaths.FETCH_ALTERNATE_PATHS_FOR_USER_IN_CLASS, courseId, unitId, lessonId,
+                context.userId(), classId);
         } else {
-            paths = AJEntityUserNavigationPaths
-                .findBySQL(AJEntityUserNavigationPaths.FETCH_ALTERNATE_PATHS_FOR_USER, courseId, unitId, lessonId,
-                    context.userId());
+            paths = AJEntityUserNavigationPaths.findBySQL(AJEntityUserNavigationPaths.FETCH_ALTERNATE_PATHS_FOR_USER,
+                courseId, unitId, lessonId, context.userId());
 
         }
         return paths;
@@ -211,29 +234,33 @@ class FetchCourseMapLessonHandler implements DBHandler {
     }
 
     private void validateUser() {
-        if ((context.userId() == null) || context.userId().isEmpty() || MessageConstants.MSG_USER_ANONYMOUS
-            .equalsIgnoreCase(context.userId())) {
+        if ((context.userId() == null) || context.userId().isEmpty()
+            || MessageConstants.MSG_USER_ANONYMOUS.equalsIgnoreCase(context.userId())) {
             LOGGER.warn("Invalid user");
             throw new MessageResponseWrapperException(
                 MessageResponseFactory.createForbiddenResponse(RESOURCE_BUNDLE.getString("not.allowed")));
         }
     }
 
-    private static void parseAndMergeResponse(JsonArray response, JsonObject lessonCollectionDetails, JsonObject path) {
+    private static void parseAndMergeResponse(JsonArray response, JsonObject lessonCollResDetails, JsonObject path) {
         final String contentType = path.getString(AJEntityUserNavigationPaths.TARGET_CONTENT_TYPE);
         String contentId = null;
         if (DBHelper.checkContentTypeIsLesson(contentType)) {
-            if (lessonCollectionDetails.containsKey(path.getString(AJEntityUserNavigationPaths.TARGET_LESSON_ID))) {
+            if (lessonCollResDetails.containsKey(path.getString(AJEntityUserNavigationPaths.TARGET_LESSON_ID))) {
                 contentId = path.getString(AJEntityUserNavigationPaths.TARGET_LESSON_ID);
             }
         } else if (DBHelper.checkContentTypeIsCollection(contentType)) {
-            if (lessonCollectionDetails.containsKey(path.getString(AJEntityUserNavigationPaths.TARGET_COLLECTION_ID))) {
+            if (lessonCollResDetails.containsKey(path.getString(AJEntityUserNavigationPaths.TARGET_COLLECTION_ID))) {
                 contentId = path.getString(AJEntityUserNavigationPaths.TARGET_COLLECTION_ID);
+            }
+        } else if (DBHelper.checkContentTypeIsResource(contentType)) {
+            if (lessonCollResDetails.containsKey(path.getString(AJEntityUserNavigationPaths.TARGET_RESOURCE_ID))) {
+                contentId = path.getString(AJEntityUserNavigationPaths.TARGET_RESOURCE_ID);
             }
         }
 
         if (contentId != null) {
-            path.mergeIn(lessonCollectionDetails.getJsonObject(contentId));
+            path.mergeIn(lessonCollResDetails.getJsonObject(contentId));
         }
         response.add(path);
     }

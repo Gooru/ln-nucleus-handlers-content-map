@@ -116,8 +116,8 @@ public interface FieldValidator {
         return o == null || validateUuid(o);
     }
     
-    static boolean validateValueExists(String o, Set<String> acceptedFields) {
-        return o != null && acceptedFields.contains(o);
+    static boolean validateAcceptedValuesIfPresent(String o, Set<String> acceptedFields) {
+        return o == null  || acceptedFields.contains(o);
     }
 
     boolean validateField(Object value);
