@@ -15,6 +15,7 @@ import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityContent;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCourse;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityLesson;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityOriginalResource;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityUserNavigationPaths;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.formatter.JsonFormatterBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult;
@@ -171,8 +172,8 @@ class FetchCourseMapLessonHandler implements DBHandler {
     private void fetchResourceDetails(JsonObject detailsResponseHolder) {
         if (!resourceIds.isEmpty()) {
             String resourceArrayString = DbHelperUtil.toPostgresArrayString(resourceIds);
-            LazyList<AJEntityContent> resources =
-                AJEntityContent.findBySQL(AJEntityContent.SELECT_RESOURCE, resourceArrayString);
+            LazyList<AJEntityOriginalResource> resources =
+                AJEntityOriginalResource.findBySQL(AJEntityOriginalResource.SELECT_RESOURCE, resourceArrayString);
             resources.forEach(content -> {
                 JsonObject data = new JsonObject();
                 data.put(MessageConstants.TITLE, content.getString(MessageConstants.TITLE));

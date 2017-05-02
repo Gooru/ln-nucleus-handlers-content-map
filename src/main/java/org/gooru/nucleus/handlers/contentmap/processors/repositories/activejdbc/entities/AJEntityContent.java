@@ -22,10 +22,4 @@ public class AJEntityContent extends Model {
         "SELECT count(id) as oe_question_count, collection_id FROM content WHERE collection_id = ANY(?::uuid[]) AND"
             + " is_deleted = false AND content_format = 'question' AND"
             + " content_subformat = 'open_ended_question' GROUP BY collection_id";
-
-    public static final String SELECT_RESOURCE_TO_VALIDATE =
-        "SELECT id FROM content where id = ?::uuid AND content_format = 'resource' AND is_deleted = false";
-    
-    public static final String SELECT_RESOURCE = "SELECT id, title, thumbnail from content where id = ANY(?::uuid[]) AND is_deleted = false";
-
 }

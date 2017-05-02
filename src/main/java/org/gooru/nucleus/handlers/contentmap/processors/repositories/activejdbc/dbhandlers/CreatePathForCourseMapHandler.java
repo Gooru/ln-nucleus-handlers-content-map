@@ -172,8 +172,8 @@ class CreatePathForCourseMapHandler implements DBHandler {
         }
 
         if (targetResourceId != null) {
-            LazyList<AJEntityContent> targetResources =
-                AJEntityContent.findBySQL(AJEntityContent.SELECT_RESOURCE_TO_VALIDATE, targetResourceId);
+            LazyList<AJEntityOriginalResource> targetResources =
+                AJEntityOriginalResource.findBySQL(AJEntityOriginalResource.SELECT_RESOURCE_TO_VALIDATE, targetResourceId);
             if (targetResources.isEmpty()) {
                 LOGGER.warn("Target resource {} not found, aborting", targetResourceId);
                 return new ExecutionResult<>(
