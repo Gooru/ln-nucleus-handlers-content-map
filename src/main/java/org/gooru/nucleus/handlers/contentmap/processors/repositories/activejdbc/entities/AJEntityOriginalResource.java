@@ -7,6 +7,7 @@ import org.javalite.activejdbc.annotations.Table;
 public class AJEntityOriginalResource extends Model {
 
     public static final String CONTENT_SUBFORMAT = "content_subformat";
+    
     public static final String SELECT_RESOURCE_TO_VALIDATE =
         "SELECT id FROM original_resource where id = ?::uuid AND is_deleted = false";
 
