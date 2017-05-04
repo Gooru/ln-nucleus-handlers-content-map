@@ -51,6 +51,7 @@ class CreatePathForCourseMapHandler implements DBHandler {
             ctxCourseId = context.request().getString(AJEntityUserNavigationPaths.CTX_COURSE_ID);
             ctxUnitId = context.request().getString(AJEntityUserNavigationPaths.CTX_UNIT_ID);
             ctxLessonId = context.request().getString(AJEntityUserNavigationPaths.CTX_LESSON_ID);
+            ctxCollectionId = context.request().getString(AJEntityUserNavigationPaths.CTX_COLLECTION_ID);
             parentPathId = context.request().getLong(AJEntityUserNavigationPaths.PARENT_PATH_ID);
             targetResourceId = context.request().getString(AJEntityUserNavigationPaths.TARGET_RESOURCE_ID);
             targetCollectionId = context.request().getString(AJEntityUserNavigationPaths.TARGET_COLLECTION_ID);
