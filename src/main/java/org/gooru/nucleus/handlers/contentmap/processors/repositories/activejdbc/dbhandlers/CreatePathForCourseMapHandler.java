@@ -109,7 +109,7 @@ class CreatePathForCourseMapHandler implements DBHandler {
         }
         if (ctxCollectionId != null) {
             LazyList<AJEntityCollection> ajEntityCollection = AJEntityCollection.findBySQL(
-                AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, ctxCollectionId, ctxLessonId, ctxUnitId, ctxCourseId);
+                AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, ctxCollectionId);
             if (ajEntityCollection.isEmpty()) {
                 LOGGER.warn("Context collection {} not found, aborting", ctxCollectionId);
                 return new ExecutionResult<>(
