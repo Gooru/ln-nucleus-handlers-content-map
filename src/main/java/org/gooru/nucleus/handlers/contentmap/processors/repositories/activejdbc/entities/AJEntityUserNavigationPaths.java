@@ -41,12 +41,13 @@ public class AJEntityUserNavigationPaths extends Model {
     private static final String BENCHMARK = "benchmark";
     public static final String COURSE_PATH = "course-path";
     public static final String ALTERNATE_PATH = "alternate-path";
-    public static final Set<String> CREATABLE_FIELDS =
-        new HashSet<>(Arrays.asList(CTX_USER_ID, CTX_COURSE_ID, CTX_UNIT_ID, CTX_LESSON_ID, CTX_COLLECTION_ID,
-            CTX_CLASS_ID, PARENT_PATH_ID, PARENT_PATH_TYPE, TARGET_COURSE_ID, TARGET_UNIT_ID, TARGET_LESSON_ID,
-            TARGET_COLLECTION_ID, TARGET_CONTENT_TYPE, TARGET_CONTENT_SUBTYPE, TARGET_RESOURCE_ID, CREATED_AT, UPDATED_AT));
+    public static final Set<String> CREATABLE_FIELDS = new HashSet<>(
+        Arrays.asList(CTX_USER_ID, CTX_COURSE_ID, CTX_UNIT_ID, CTX_LESSON_ID, CTX_COLLECTION_ID, CTX_CLASS_ID,
+            PARENT_PATH_ID, PARENT_PATH_TYPE, TARGET_COURSE_ID, TARGET_UNIT_ID, TARGET_LESSON_ID, TARGET_COLLECTION_ID,
+            TARGET_CONTENT_TYPE, TARGET_CONTENT_SUBTYPE, TARGET_RESOURCE_ID, CREATED_AT, UPDATED_AT));
     public static final List<String> RESPONSE_FIELDS = Arrays.asList(TARGET_COURSE_ID, TARGET_UNIT_ID, TARGET_LESSON_ID,
-        TARGET_COLLECTION_ID, TARGET_CONTENT_TYPE, TARGET_CONTENT_SUBTYPE, MessageConstants.ID, TARGET_RESOURCE_ID);
+        TARGET_COLLECTION_ID, TARGET_CONTENT_TYPE, TARGET_CONTENT_SUBTYPE, MessageConstants.ID, TARGET_RESOURCE_ID,
+        CTX_COURSE_ID, CTX_UNIT_ID, CTX_LESSON_ID, CTX_COLLECTION_ID, CTX_CLASS_ID);
     public static final Set<String> MANDATORY_FIELDS = new HashSet<>(Arrays.asList(TARGET_CONTENT_TYPE));
     private static final Set<String> ACCEPT_TARGET_CONTENT_TYPES =
         new HashSet<>(Arrays.asList(LESSON, COLLECTION, ASSESSMENT, RESOURCE));
@@ -57,11 +58,13 @@ public class AJEntityUserNavigationPaths extends Model {
     private static final Map<String, FieldConverter> converterRegistry;
     public static final String FETCH_ALTERNATE_PATHS_FOR_USER =
         "SELECT  id, target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
-            + "target_content_subtype, target_resource_id from user_navigation_paths where ctx_course_id = ?::uuid AND ctx_unit_id = "
+            + "target_content_subtype, target_resource_id, ctx_course_id, ctx_unit_id, ctx_lesson_id, ctx_collection_id "
+            + ", ctx_class_id from user_navigation_paths where ctx_course_id = ?::uuid AND ctx_unit_id = "
             + "?::uuid AND ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid and ctx_class_id is null";
     public static final String FETCH_ALTERNATE_PATHS_FOR_USER_IN_CLASS =
         "SELECT  id, target_course_id, target_unit_id, target_lesson_id, target_collection_id, target_content_type, "
-            + "target_content_subtype, target_resource_id from user_navigation_paths where ctx_course_id = ?::uuid AND ctx_unit_id = "
+            + "target_content_subtype, target_resource_id, ctx_course_id, ctx_unit_id, ctx_lesson_id, ctx_collection_id "
+            + ", ctx_class_id from user_navigation_paths where ctx_course_id = ?::uuid AND ctx_unit_id = "
             + "?::uuid AND ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid and ctx_class_id = ?::uuid";
 
     static {
@@ -174,5 +177,5 @@ public class AJEntityUserNavigationPaths extends Model {
             return converterRegistry.get(fieldName);
         }
     }
-    
+
 }
