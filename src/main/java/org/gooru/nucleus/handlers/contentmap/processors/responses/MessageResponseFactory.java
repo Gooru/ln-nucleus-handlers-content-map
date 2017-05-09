@@ -78,4 +78,9 @@ public final class MessageResponseFactory {
             .setContentTypeJson()
             .setResponseBody(new JsonObject().put(MessageConstants.MSG_MESSAGE, API_VERSION_DEPRECATED)).build();
     }
+    
+    public static MessageResponse createConflictResponse(String message) {
+        return new MessageResponse.Builder().failed().setStatusConflict()
+            .setResponseBody(new JsonObject().put(MessageConstants.MSG_MESSAGE, message)).build();
+    }
 }

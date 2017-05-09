@@ -6,6 +6,7 @@ import org.gooru.nucleus.handlers.contentmap.constants.MessageConstants;
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.contentmap.processors.events.EventBuilderFactory;
 import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageResponseWrapperException;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.*;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entitybuilders.EntityBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.validators.PayloadValidator;
@@ -35,8 +36,10 @@ class CreatePathForCourseMapHandler implements DBHandler {
     private String targetResourceId;
     private Long parentPathId;
     private String ctxClassId;
+    private String targetContentSubType;
     private AJEntityUserNavigationPaths path;
     private AJEntityUserNavigationPaths parentPath;
+    private String targetContentType;
 
     CreatePathForCourseMapHandler(ProcessorContext context) {
         this.context = context;
@@ -59,6 +62,9 @@ class CreatePathForCourseMapHandler implements DBHandler {
             targetUnitId = context.request().getString(AJEntityUserNavigationPaths.TARGET_UNIT_ID);
             targetCourseId = context.request().getString(AJEntityUserNavigationPaths.TARGET_COURSE_ID);
             ctxClassId = context.request().getString(AJEntityUserNavigationPaths.CTX_CLASS_ID);
+            targetContentSubType = context.request().getString(AJEntityUserNavigationPaths.TARGET_CONTENT_SUBTYPE);
+            targetContentType = context.request().getString(AJEntityUserNavigationPaths.TARGET_CONTENT_TYPE);
+            validateMandatoryFields();
         } catch (MessageResponseWrapperException mrwe) {
             return new ExecutionResult<>(mrwe.getMessageResponse(), ExecutionResult.ExecutionStatus.FAILED);
         }
@@ -67,6 +73,41 @@ class CreatePathForCourseMapHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> validateRequest() {
+
+        if (DBHelper.checkSubContentTypeIsPreOrPostTestAssessment(targetContentSubType)) {
+            LazyList<AJEntityUserNavigationPaths> userNavigationPaths = AJEntityUserNavigationPaths.findBySQL(
+                AJEntityUserNavigationPaths.SELECT_VALIDATE_POST_AND_PRE_TEST_ASSESSMENT_PATH, ctxCourseId, ctxUnitId,
+                ctxLessonId, context.userId(), targetCollectionId);
+            if (!userNavigationPaths.isEmpty()) {
+                LOGGER.warn(
+                    "This {} assessment {} is already added to this contextual path of course {}, unit {}, lesson  {}, and user {}",
+                    targetContentSubType, targetCollectionId, ctxCourseId, ctxUnitId, ctxLessonId, context.userId());
+                return new ExecutionResult<>(MessageResponseFactory.createConflictResponse(
+                    RESOURCE_BUNDLE.getString("ctxcul.path.assessment.already.added")), ExecutionStatus.FAILED);
+            }
+
+        } else if (DBHelper.checkSubContentTypeIsBenchmarkAssessment(targetContentSubType)) {
+            LazyList<AJEntityUserNavigationPaths> userNavigationPaths = AJEntityUserNavigationPaths.findBySQL(
+                AJEntityUserNavigationPaths.SELECT_VALIDATE_BENCHMARK_ASSESSMENT_PATH, parentPathId, context.userId(),
+                targetCollectionId);
+            if (!userNavigationPaths.isEmpty()) {
+                LOGGER.warn("This benchmark assessment {} is already added to this parent path of {}, and user {}",
+                    targetCollectionId, parentPathId, context.userId());
+                return new ExecutionResult<>(MessageResponseFactory.createConflictResponse(
+                    RESOURCE_BUNDLE.getString("parent.path.assessment.already.added")), ExecutionStatus.FAILED);
+            }
+        } else if (DBHelper.checkContentTypeIsResource(targetContentType)) {
+            LazyList<AJEntityUserNavigationPaths> userNavigationPaths =
+                AJEntityUserNavigationPaths.findBySQL(AJEntityUserNavigationPaths.SELECT_VALIDATE_RESOURCE_PATH,
+                    ctxCourseId, ctxUnitId, ctxLessonId, ctxCollectionId, context.userId(), targetResourceId);
+            if (!userNavigationPaths.isEmpty()) {
+                LOGGER.warn(
+                    "This resource {} is already added to this contextual path of course {}, unit {}, lesson  {}, collection, and user {}",
+                    targetResourceId, ctxCourseId, ctxUnitId, ctxLessonId, ctxCollectionId, context.userId());
+                return new ExecutionResult<>(MessageResponseFactory.createConflictResponse(
+                    RESOURCE_BUNDLE.getString("ctxculc.path.resource.already.added")), ExecutionStatus.FAILED);
+            }
+        }
 
         if (parentPathId == null) {
             LazyList<AJEntityCourse> courses =
@@ -108,8 +149,8 @@ class CreatePathForCourseMapHandler implements DBHandler {
             parentPath = userNavigationPaths.get(0);
         }
         if (ctxCollectionId != null) {
-            LazyList<AJEntityCollection> ajEntityCollection = AJEntityCollection.findBySQL(
-                AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, ctxCollectionId);
+            LazyList<AJEntityCollection> ajEntityCollection =
+                AJEntityCollection.findBySQL(AJEntityCollection.SELECT_COLLECTION_TO_VALIDATE, ctxCollectionId);
             if (ajEntityCollection.isEmpty()) {
                 LOGGER.warn("Context collection {} not found, aborting", ctxCollectionId);
                 return new ExecutionResult<>(
@@ -173,8 +214,8 @@ class CreatePathForCourseMapHandler implements DBHandler {
         }
 
         if (targetResourceId != null) {
-            LazyList<AJEntityOriginalResource> targetResources =
-                AJEntityOriginalResource.findBySQL(AJEntityOriginalResource.SELECT_RESOURCE_TO_VALIDATE, targetResourceId);
+            LazyList<AJEntityOriginalResource> targetResources = AJEntityOriginalResource
+                .findBySQL(AJEntityOriginalResource.SELECT_RESOURCE_TO_VALIDATE, targetResourceId);
             if (targetResources.isEmpty()) {
                 LOGGER.warn("Target resource {} not found, aborting", targetResourceId);
                 return new ExecutionResult<>(
@@ -204,7 +245,6 @@ class CreatePathForCourseMapHandler implements DBHandler {
             path.set(AJEntityUserNavigationPaths.CTX_COURSE_ID, parentPath.getTargetCourseId());
             path.set(AJEntityUserNavigationPaths.CTX_UNIT_ID, parentPath.getTargetUnitId());
             path.set(AJEntityUserNavigationPaths.CTX_LESSON_ID, parentPath.getTargetLessonId());
-            path.set(AJEntityUserNavigationPaths.CTX_COLLECTION_ID, parentPath.getTargetCollectionId());
             path.set(AJEntityUserNavigationPaths.PARENT_PATH_ID, parentPath.getParentPathId());
             path.set(AJEntityUserNavigationPaths.PARENT_PATH_TYPE, AJEntityUserNavigationPaths.ALTERNATE_PATH);
         } else {
@@ -213,6 +253,7 @@ class CreatePathForCourseMapHandler implements DBHandler {
         new DefaultAJEntityUserNavigationPathsBuilder().build(this.path, context.request(),
             AJEntityUserNavigationPaths.getConverterRegistry());
         path.setUserCtxId(context.userId());
+        setCtxCollDefaultValIsNullIfSubTypeIsPreOrPost();
         path.save();
         String pathId = path.getId().toString();
         return new ExecutionResult<>(
@@ -224,6 +265,12 @@ class CreatePathForCourseMapHandler implements DBHandler {
     @Override
     public boolean handlerReadOnly() {
         return false;
+    }
+
+    private void setCtxCollDefaultValIsNullIfSubTypeIsPreOrPost() {
+        if (DBHelper.checkSubContentTypeIsPreOrPostTestAssessment(targetContentSubType)) {
+            path.set(AJEntityUserNavigationPaths.CTX_COLLECTION_ID, null);
+        }
     }
 
     private void validateUser() {
@@ -241,6 +288,28 @@ class CreatePathForCourseMapHandler implements DBHandler {
         if (errors != null && !errors.isEmpty()) {
             LOGGER.warn("Validation errors for request");
             throw new MessageResponseWrapperException(MessageResponseFactory.createValidationErrorResponse(errors));
+        }
+    }
+
+    private void validateMandatoryFields() {
+        if (DBHelper.checkContentTypeIsResource(targetContentType)) {
+            if (targetResourceId == null || targetResourceId.isEmpty()) {
+                LOGGER.warn("Target resource id is missing.");
+                throw new MessageResponseWrapperException(MessageResponseFactory
+                    .createInvalidRequestResponse(RESOURCE_BUNDLE.getString("missing.target.resource.id")));
+            }
+            if (ctxCollectionId == null || ctxCollectionId.isEmpty()) {
+                LOGGER.warn("Context of collection id is missing.");
+                throw new MessageResponseWrapperException(MessageResponseFactory
+                    .createInvalidRequestResponse(RESOURCE_BUNDLE.getString("missing.ctx.collection.id")));
+            }
+        } else if (DBHelper.checkContentTypeIsCollection(targetContentType)
+            && DBHelper.checkSubContentTypeIsBenchmarkAssessment(targetContentSubType)) {
+            if (parentPathId == null || parentPathId == 0) {
+                LOGGER.warn("Parent path id is missing.");
+                throw new MessageResponseWrapperException(MessageResponseFactory
+                    .createInvalidRequestResponse(RESOURCE_BUNDLE.getString("missing.parent.path.id")));
+            }
         }
     }
 

@@ -101,6 +101,11 @@ public final class MessageResponse {
             this.httpStatus = HttpConstants.HttpStatus.ERROR;
             return this;
         }
+        
+        public Builder setStatusConflict() {
+            this.httpStatus = HttpConstants.HttpStatus.CONFLICT;
+            return this;
+        }
 
         public Builder setStatusHttpCode(HttpConstants.HttpStatus httpStatus) {
             this.httpStatus = httpStatus;

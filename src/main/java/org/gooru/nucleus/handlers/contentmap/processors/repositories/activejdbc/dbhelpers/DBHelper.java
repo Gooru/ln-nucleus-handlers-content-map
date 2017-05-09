@@ -76,25 +76,33 @@ public final class DBHelper {
     }
 
     public static void validateIdAsUUID(String validationTarget, String bundleKey) {
-        if (validationTarget == null || validationTarget.isEmpty() || !ValidationHelperUtils
-            .validateId(validationTarget)) {
+        if (validationTarget == null || validationTarget.isEmpty()
+            || !ValidationHelperUtils.validateId(validationTarget)) {
             throw new MessageResponseWrapperException(
                 MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString(bundleKey)));
         }
     }
 
     public static boolean checkContentTypeIsCollection(String contentType) {
-        return (contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.ASSESSMENT) || contentType
-            .equalsIgnoreCase(AJEntityUserNavigationPaths.COLLECTION));
+        return (contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.ASSESSMENT)
+            || contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.COLLECTION));
     }
 
     public static boolean checkContentTypeIsLesson(String contentType) {
         return contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.LESSON);
     }
-    
+
     public static boolean checkContentTypeIsResource(String contentType) {
         return contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.RESOURCE);
     }
 
+    public static boolean checkSubContentTypeIsPreOrPostTestAssessment(String subContentType) {
+        return subContentType != null && (subContentType.equalsIgnoreCase(AJEntityUserNavigationPaths.PRE_TEST)
+            || subContentType.equalsIgnoreCase(AJEntityUserNavigationPaths.POST_TEST));
+    }
+
+    public static boolean checkSubContentTypeIsBenchmarkAssessment(String subContentType) {
+        return subContentType != null && subContentType.equalsIgnoreCase(AJEntityUserNavigationPaths.BENCHMARK);
+    }
 
 }

@@ -36,9 +36,9 @@ public class AJEntityUserNavigationPaths extends Model {
     public static final String COLLECTION = "collection";
     public static final String ASSESSMENT = "assessment";
     public static final String RESOURCE = "resource";
-    private static final String PRE_TEST = "pre-test";
-    private static final String POST_TEST = "post-test";
-    private static final String BENCHMARK = "benchmark";
+    public static final String PRE_TEST = "pre-test";
+    public static final String POST_TEST = "post-test";
+    public static final String BENCHMARK = "benchmark";
     public static final String COURSE_PATH = "course-path";
     public static final String ALTERNATE_PATH = "alternate-path";
     public static final Set<String> CREATABLE_FIELDS = new HashSet<>(
@@ -66,6 +66,17 @@ public class AJEntityUserNavigationPaths extends Model {
             + "target_content_subtype, target_resource_id, ctx_course_id, ctx_unit_id, ctx_lesson_id, ctx_collection_id "
             + ", ctx_class_id from user_navigation_paths where ctx_course_id = ?::uuid AND ctx_unit_id = "
             + "?::uuid AND ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid and ctx_class_id = ?::uuid";
+    public static final String SELECT_VALIDATE_POST_AND_PRE_TEST_ASSESSMENT_PATH =
+        "SELECT target_collection_id FROM user_navigation_paths WHERE ctx_course_id = ?::uuid AND ctx_unit_id = ?::uuid AND "
+            + "ctx_lesson_id = ?::uuid AND ctx_user_id = ?::uuid AND target_collection_id = ?::uuid AND "
+            + "target_content_type = 'assessment'";
+    public static final String SELECT_VALIDATE_BENCHMARK_ASSESSMENT_PATH =
+        "SELECT target_collection_id FROM user_navigation_paths WHERE parent_path_id = ?::bigint AND ctx_user_id = ?::uuid AND  target_content_type = 'assessment'"
+            + " AND target_collection_id = ?::uuid AND target_content_subtype = 'benchmark'";
+    public static final String SELECT_VALIDATE_RESOURCE_PATH =
+        "SELECT target_resource_id FROM user_navigation_paths WHERE ctx_course_id = ?::uuid AND ctx_unit_id = ?::uuid AND "
+            + "ctx_lesson_id = ?::uuid AND ctx_collection_id = ?::uuid AND ctx_user_id = ?::uuid AND target_resource_id = ?::uuid"
+            + " AND target_content_type = 'resource'";
 
     static {
         validatorRegistry = initializeValidators();
