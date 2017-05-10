@@ -36,6 +36,8 @@ public class AJEntityBookmark extends Model {
     private static final Map<String, FieldConverter> converterRegistry;
     public static final String FETCH_UNDELETED_BOOKMARK_QUERY = "id = ?::uuid and is_deleted = ?";
     public static final String LIST_BOOKMARK_FOR_USER_QUERY = "user_id = ?::uuid and is_deleted = false";
+    public static final String DUPLICATE_BOOKMARK_QUERY =
+        "user_id = ?::uuid and content_id = ?::uuid and " + "content_type = ? and is_deleted = false";
     public static final List<String> LIST_BOOKMARK_FIELDS = Arrays.asList(ID, CONTENT_ID, CONTENT_TYPE, TITLE);
 
     static {
@@ -142,6 +144,11 @@ public class AJEntityBookmark extends Model {
         } else {
             this.set(fieldName, fieldValue);
         }
+    }
+
+    public AJEntityBookmark findNonDeletedDuplicate() {
+        return AJEntityBookmark
+            .findFirst(DUPLICATE_BOOKMARK_QUERY, this.getUserId(), this.getContentId(), this.getContentType());
     }
 
     public static ValidatorRegistry getValidatorRegistry() {
