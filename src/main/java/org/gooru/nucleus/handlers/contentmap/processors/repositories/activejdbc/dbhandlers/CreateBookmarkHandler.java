@@ -9,6 +9,7 @@ import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageRespon
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityBookmark;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entitybuilders.EntityBuilder;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.validators.BookmarkTargetValidator;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.validators.PayloadValidator;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.MessageResponse;
@@ -25,6 +26,7 @@ class CreateBookmarkHandler implements DBHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CreateBookmarkHandler.class);
     private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle("messages");
     private final ProcessorContext context;
+    private AJEntityBookmark bookmark;
 
     CreateBookmarkHandler(ProcessorContext context) {
         this.context = context;
@@ -49,10 +51,25 @@ class CreateBookmarkHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
-        AJEntityBookmark bookmark = new AJEntityBookmark();
-        bookmark.setUserId(context.userId());
-        new DefaultAJEntityBookmarkBuilder()
-            .build(bookmark, this.context.request(), AJEntityBookmark.getConverterRegistry());
+        initializeBookmarkToPersist();
+        AJEntityBookmark duplicateBookmark = bookmarkExistsAlreadyForUser();
+        if (duplicateBookmark != null) {
+            return bookmarkCreatedResponseWithoutEvent(duplicateBookmark);
+        }
+        return persistBookmark();
+    }
+
+    @Override
+    public boolean handlerReadOnly() {
+        return false;
+    }
+
+    private ExecutionResult<MessageResponse> persistBookmark() {
+        if (!bookmarkedEntityIsValid()) {
+            return new ExecutionResult<>(
+                MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString("not.found")),
+                ExecutionResult.ExecutionStatus.FAILED);
+        }
 
         String bookmarkId = AJEntityBookmark.createBookmark(bookmark);
         return new ExecutionResult<>(MessageResponseFactory
@@ -60,9 +77,25 @@ class CreateBookmarkHandler implements DBHandler {
             ExecutionResult.ExecutionStatus.SUCCESSFUL);
     }
 
-    @Override
-    public boolean handlerReadOnly() {
-        return false;
+    private void initializeBookmarkToPersist() {
+        bookmark = new AJEntityBookmark();
+        bookmark.setUserId(context.userId());
+        new DefaultAJEntityBookmarkBuilder()
+            .build(bookmark, this.context.request(), AJEntityBookmark.getConverterRegistry());
+    }
+
+    private boolean bookmarkedEntityIsValid() {
+        return BookmarkTargetValidator.validateBookmarkTarget(bookmark);
+    }
+
+    private ExecutionResult<MessageResponse> bookmarkCreatedResponseWithoutEvent(AJEntityBookmark duplicateBookmark) {
+        return new ExecutionResult<>(
+            MessageResponseFactory.createCreatedResponseWithoutEvent(duplicateBookmark.getId().toString()),
+            ExecutionResult.ExecutionStatus.SUCCESSFUL);
+    }
+
+    private AJEntityBookmark bookmarkExistsAlreadyForUser() {
+        return bookmark.findNonDeletedDuplicate();
     }
 
     private void validateUser() {
