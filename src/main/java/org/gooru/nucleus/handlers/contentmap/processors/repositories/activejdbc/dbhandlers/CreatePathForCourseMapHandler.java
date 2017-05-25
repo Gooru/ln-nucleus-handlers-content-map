@@ -97,9 +97,16 @@ class CreatePathForCourseMapHandler implements DBHandler {
                     RESOURCE_BUNDLE.getString("parent.path.assessment.already.added")), ExecutionStatus.FAILED);
             }
         } else if (DBHelper.checkContentTypeIsResource(targetContentType)) {
-            LazyList<AJEntityUserNavigationPaths> userNavigationPaths =
-                AJEntityUserNavigationPaths.findBySQL(AJEntityUserNavigationPaths.SELECT_VALIDATE_RESOURCE_PATH,
-                    ctxCourseId, ctxUnitId, ctxLessonId, ctxCollectionId, context.userId(), targetResourceId);
+            LazyList<AJEntityUserNavigationPaths> userNavigationPaths;
+            if (ctxClassId != null) {
+                userNavigationPaths = AJEntityUserNavigationPaths
+                    .findBySQL(AJEntityUserNavigationPaths.SELECT_VALIDATE_RESOURCE_PATH_WITH_CLASS, ctxClassId,
+                        ctxCourseId, ctxUnitId, ctxLessonId, ctxCollectionId, context.userId(), targetResourceId);
+            } else {
+                userNavigationPaths = AJEntityUserNavigationPaths
+                    .findBySQL(AJEntityUserNavigationPaths.SELECT_VALIDATE_RESOURCE_PATH_WITHOUT_CLASS, ctxCourseId,
+                        ctxUnitId, ctxLessonId, ctxCollectionId, context.userId(), targetResourceId);
+            }
             if (!userNavigationPaths.isEmpty()) {
                 LOGGER.warn(
                     "This resource {} is already added to this contextual path of course {}, unit {}, lesson  {}, collection, and user {}",

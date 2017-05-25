@@ -73,10 +73,14 @@ public class AJEntityUserNavigationPaths extends Model {
     public static final String SELECT_VALIDATE_BENCHMARK_ASSESSMENT_PATH =
         "SELECT target_collection_id FROM user_navigation_paths WHERE parent_path_id = ?::bigint AND ctx_user_id = ?::uuid AND  target_content_type = 'assessment'"
             + " AND target_collection_id = ?::uuid AND target_content_subtype = 'benchmark'";
-    public static final String SELECT_VALIDATE_RESOURCE_PATH =
-        "SELECT target_resource_id FROM user_navigation_paths WHERE ctx_course_id = ?::uuid AND ctx_unit_id = ?::uuid AND "
-            + "ctx_lesson_id = ?::uuid AND ctx_collection_id = ?::uuid AND ctx_user_id = ?::uuid AND target_resource_id = ?::uuid"
-            + " AND target_content_type = 'resource'";
+    public static final String SELECT_VALIDATE_RESOURCE_PATH_WITH_CLASS =
+        "SELECT target_resource_id FROM user_navigation_paths WHERE ctx_class_id = ?::uuid AND ctx_course_id = ?::uuid "
+            + "AND ctx_unit_id = ?::uuid AND ctx_lesson_id = ?::uuid AND ctx_collection_id = ?::uuid AND ctx_user_id "
+            + "= ?::uuid AND target_resource_id = ?::uuid AND target_content_type = 'resource'";
+    public static final String SELECT_VALIDATE_RESOURCE_PATH_WITHOUT_CLASS =
+        "SELECT target_resource_id FROM user_navigation_paths WHERE ctx_course_id = ?::uuid AND ctx_unit_id = ?::uuid"
+            + " AND ctx_lesson_id = ?::uuid AND ctx_collection_id = ?::uuid AND ctx_user_id = ?::uuid AND "
+            + "target_resource_id = ?::uuid AND target_content_type = 'resource' AND ctx_class_id is null";
 
     static {
         validatorRegistry = initializeValidators();
