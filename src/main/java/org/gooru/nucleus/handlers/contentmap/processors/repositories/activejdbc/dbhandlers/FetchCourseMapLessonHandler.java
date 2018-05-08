@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.gooru.nucleus.handlers.contentmap.app.components.AppConfiguration;
 import org.gooru.nucleus.handlers.contentmap.constants.MessageConstants;
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageResponseWrapperException;
@@ -91,6 +92,14 @@ class FetchCourseMapLessonHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
+
+        if (AppConfiguration.getInstance().isAlternatePathDisabled()) {
+            JsonObject response = new JsonObject();
+            response.put(MessageConstants.ALTERNATE_PATHS, new JsonArray());
+            return new ExecutionResult<>(MessageResponseFactory.createOkayResponse(response),
+                ExecutionResult.ExecutionStatus.SUCCESSFUL);
+        }
+
         LazyList<AJEntityUserNavigationPaths> paths = getAlternatePaths();
 
         JsonArray navigationPathArray = new JsonArray(JsonFormatterBuilder

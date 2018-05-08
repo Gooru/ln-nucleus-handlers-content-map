@@ -53,6 +53,10 @@ public final class AppConfiguration implements Initializer {
         return getAppConfiguration().getInteger(LIMIT_MAX);
     }
 
+    public boolean isAlternatePathDisabled() {
+        return configuration.getJsonObject(KEY).getBoolean("alternate.path.disable");
+    }
+
     public String getClassEndDate() {
         return configuration.getJsonObject(KEY).getString(CLASS_END_DATE_KEY);
     }
