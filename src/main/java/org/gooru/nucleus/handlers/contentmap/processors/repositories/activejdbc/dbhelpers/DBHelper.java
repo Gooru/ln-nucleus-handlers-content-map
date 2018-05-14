@@ -93,15 +93,18 @@ public final class DBHelper {
     }
 
     public static boolean checkIsSignatureAssessment(String suggestedContentType) {
-        return suggestedContentType.equalsIgnoreCase(AJEntityUserNavigationPaths.SIGNATURE_ASSESSMENT);
+        return (suggestedContentType != null
+            && suggestedContentType.equalsIgnoreCase(AJEntityUserNavigationPaths.SIGNATURE_ASSESSMENT));
     }
 
     public static boolean checkIsSystemSuggestionType(String suggestionType) {
-        return suggestionType.equalsIgnoreCase(AJEntityUserNavigationPaths.SUGGESTION_TYPE_SYSTEM);
+        return (suggestionType != null
+            && suggestionType.equalsIgnoreCase(AJEntityUserNavigationPaths.SUGGESTION_TYPE_SYSTEM));
     }
 
     public static boolean checkIsTeacherSuggestionType(String suggestionType) {
-        return suggestionType.equalsIgnoreCase(AJEntityUserNavigationPaths.SUGGESTION_TYPE_TEACHER);
+        return (suggestionType != null
+            && suggestionType.equalsIgnoreCase(AJEntityUserNavigationPaths.SUGGESTION_TYPE_TEACHER));
     }
 
 }
