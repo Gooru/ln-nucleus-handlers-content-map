@@ -29,8 +29,4 @@ class AJCourseMapRepo implements CourseMapRepo {
         return TransactionExecutor.executeTransaction(DBHandlerBuilder.buildFetchCourseMapLessonHandler(context));
     }
 
-    @Override
-    public MessageResponse createPathForCourseMap() {
-        return TransactionExecutor.executeTransaction(DBHandlerBuilder.buildCreatePathForCourseMapHandler(context));
-    }
 }
