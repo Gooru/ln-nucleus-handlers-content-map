@@ -34,7 +34,6 @@ public final class MessageConstants {
     public static final String MSG_OP_COURSEMAP_COURSE_GET = "coursemap.course.get";
     public static final String MSG_OP_COURSEMAP_UNIT_GET = "coursemap.unit.get";
     public static final String MSG_OP_COURSEMAP_LESSON_GET = "coursemap.lesson.get";
-    public static final String MSG_OP_COURSEMAP_PATH_CREATE = "coursemap.path.create";
     public static final String MSG_OP_COURSE_GET = "course.get";
     public static final String MSG_OP_UNIT_GET = "unit.get";
     public static final String MSG_OP_LESSON_GET = "lesson.get";

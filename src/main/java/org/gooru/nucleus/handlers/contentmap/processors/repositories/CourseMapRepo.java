@@ -10,6 +10,4 @@ public interface CourseMapRepo {
 
     MessageResponse fetchCourseMapLesson();
     
-    MessageResponse createPathForCourseMap();
-
 }
