@@ -156,7 +156,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
                 JsonObject data = new JsonObject();
                 data.put(MessageConstants.TITLE, content.getString(MessageConstants.TITLE));
                 data.put(MessageConstants.THUMBNAIL, content.getString(MessageConstants.THUMBNAIL));
-                data.put(AJEntityUserNavigationPaths.SUGGESTED_CONTENT_SUBTYPE,
+                data.put(AJEntityOriginalResource.CONTENT_SUBFORMAT,
                     content.getString(AJEntityOriginalResource.CONTENT_SUBFORMAT));
                 detailsResponseHolder.put(content.getString(MessageConstants.ID), data);
             });
