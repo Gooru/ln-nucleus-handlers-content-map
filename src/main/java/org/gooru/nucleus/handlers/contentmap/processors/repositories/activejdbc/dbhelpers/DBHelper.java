@@ -88,21 +88,23 @@ public final class DBHelper {
             || contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.COLLECTION));
     }
 
-    public static boolean checkContentTypeIsLesson(String contentType) {
-        return contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.LESSON);
-    }
-
     public static boolean checkContentTypeIsResource(String contentType) {
         return contentType.equalsIgnoreCase(AJEntityUserNavigationPaths.RESOURCE);
     }
 
-    public static boolean checkSubContentTypeIsPreOrPostTestAssessment(String subContentType) {
-        return subContentType != null && (subContentType.equalsIgnoreCase(AJEntityUserNavigationPaths.PRE_TEST)
-            || subContentType.equalsIgnoreCase(AJEntityUserNavigationPaths.POST_TEST));
+    public static boolean checkIsSignatureAssessment(String suggestedContentType) {
+        return (suggestedContentType != null
+            && suggestedContentType.equalsIgnoreCase(AJEntityUserNavigationPaths.SIGNATURE_ASSESSMENT));
     }
 
-    public static boolean checkSubContentTypeIsBenchmarkAssessment(String subContentType) {
-        return subContentType != null && subContentType.equalsIgnoreCase(AJEntityUserNavigationPaths.BENCHMARK);
+    public static boolean checkIsSystemSuggestionType(String suggestionType) {
+        return (suggestionType != null
+            && suggestionType.equalsIgnoreCase(AJEntityUserNavigationPaths.SUGGESTION_TYPE_SYSTEM));
+    }
+
+    public static boolean checkIsTeacherSuggestionType(String suggestionType) {
+        return (suggestionType != null
+            && suggestionType.equalsIgnoreCase(AJEntityUserNavigationPaths.SUGGESTION_TYPE_TEACHER));
     }
 
 }

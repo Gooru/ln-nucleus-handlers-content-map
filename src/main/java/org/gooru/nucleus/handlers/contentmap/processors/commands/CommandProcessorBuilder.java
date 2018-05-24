@@ -64,13 +64,6 @@ public enum CommandProcessorBuilder {
         public Processor build(ProcessorContext context) {
             return new CourseMapLessonFetchProcessor(context);
         }
-    },
-
-    PATH_COURSE_CREATE(MessageConstants.MSG_OP_COURSEMAP_PATH_CREATE) {
-        @Override
-        public Processor build(ProcessorContext context) {
-            return new CourseMapPathCreateProcessor(context);
-        }
     };
 
     private String name;

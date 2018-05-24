@@ -39,7 +39,6 @@ class FetchCourseMapLessonHandler implements DBHandler {
     private String unitId;
     private String lessonId;
     private String classId;
-    private List<String> lessonIds;
     private List<String> collectionIds;
     private List<String> resourceIds;
 
@@ -91,30 +90,20 @@ class FetchCourseMapLessonHandler implements DBHandler {
 
     @Override
     public ExecutionResult<MessageResponse> executeRequest() {
-        LazyList<AJEntityUserNavigationPaths> paths = getAlternatePaths();
-
-        JsonArray navigationPathArray = new JsonArray(JsonFormatterBuilder
+        final LazyList<AJEntityUserNavigationPaths> paths = getAlternatePaths();
+        final JsonArray navigationPathArray = new JsonArray(JsonFormatterBuilder
             .buildSimpleJsonFormatter(false, AJEntityUserNavigationPaths.RESPONSE_FIELDS).toJson(paths));
-
-        JsonArray response = new JsonArray();
+        final JsonObject response = new JsonObject();
 
         if (!navigationPathArray.isEmpty()) {
-            lessonIds = new ArrayList<>(navigationPathArray.size());
             collectionIds = new ArrayList<>(navigationPathArray.size());
             resourceIds = new ArrayList<>(navigationPathArray.size());
-
-            initializePathsForCollAndLessonAndRes(navigationPathArray);
-
-            JsonObject lessonCollResDetailsHolder = new JsonObject();
-
-            fetchLessonDetails(lessonCollResDetailsHolder);
-
-            fetchCollectionDetails(lessonCollResDetailsHolder);
-
-            fetchResourceDetails(lessonCollResDetailsHolder);
-
+            initializePathsForCollAndRes(navigationPathArray);
+            final JsonObject collResDetailsHolder = new JsonObject();
+            fetchCollectionDetails(collResDetailsHolder);
+            fetchResourceDetails(collResDetailsHolder);
             navigationPathArray.forEach(result -> {
-                parseAndMergeResponse(response, lessonCollResDetailsHolder, (JsonObject) result);
+                parseAndMergeResponse(response, collResDetailsHolder, (JsonObject) result);
             });
 
         }
@@ -128,6 +117,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
         return true;
     }
 
+    @SuppressWarnings("rawtypes")
     private void fetchCollectionDetails(JsonObject detailsResponseHolder) {
         if (!collectionIds.isEmpty()) {
             String collectionArrayString = DbHelperUtil.toPostgresArrayString(collectionIds);
@@ -139,6 +129,7 @@ class FetchCourseMapLessonHandler implements DBHandler {
                 data.put(MessageConstants.THUMBNAIL, content.getString(MessageConstants.THUMBNAIL));
                 detailsResponseHolder.put(content.getString(MessageConstants.ID), data);
             });
+
             List<Map> collectionContentCount =
                 Base.findAll(AJEntityContent.SELECT_CONTENT_COUNT_BY_COLLECTION, collectionArrayString);
             collectionContentCount.stream().forEach(data -> {
@@ -156,19 +147,6 @@ class FetchCourseMapLessonHandler implements DBHandler {
         }
     }
 
-    private void fetchLessonDetails(JsonObject detailsResponseHolder) {
-        if (!lessonIds.isEmpty()) {
-            String lessonArrayString = DbHelperUtil.toPostgresArrayString(lessonIds);
-            LazyList<AJEntityLesson> lessons =
-                AJEntityLesson.findBySQL(AJEntityLesson.SELECT_LESSON, lessonArrayString);
-            lessons.forEach(content -> {
-                JsonObject data = new JsonObject();
-                data.put(MessageConstants.TITLE, content.getString(MessageConstants.TITLE));
-                detailsResponseHolder.put(content.getString(MessageConstants.ID_LESSON), data);
-            });
-        }
-    }
-
     private void fetchResourceDetails(JsonObject detailsResponseHolder) {
         if (!resourceIds.isEmpty()) {
             String resourceArrayString = DbHelperUtil.toPostgresArrayString(resourceIds);
@@ -178,24 +156,22 @@ class FetchCourseMapLessonHandler implements DBHandler {
                 JsonObject data = new JsonObject();
                 data.put(MessageConstants.TITLE, content.getString(MessageConstants.TITLE));
                 data.put(MessageConstants.THUMBNAIL, content.getString(MessageConstants.THUMBNAIL));
-                data.put(AJEntityUserNavigationPaths.TARGET_CONTENT_SUBTYPE, content.getString(AJEntityOriginalResource.CONTENT_SUBFORMAT));
+                data.put(AJEntityOriginalResource.CONTENT_SUBFORMAT,
+                    content.getString(AJEntityOriginalResource.CONTENT_SUBFORMAT));
                 detailsResponseHolder.put(content.getString(MessageConstants.ID), data);
             });
         }
     }
 
-    private void initializePathsForCollAndLessonAndRes(JsonArray results) {
+    private void initializePathsForCollAndRes(JsonArray results) {
         results.forEach(content -> {
-            JsonObject targetContent = (JsonObject) content;
+            final JsonObject suggestedContent = (JsonObject) content;
             if (DBHelper.checkContentTypeIsCollection(
-                targetContent.getString(AJEntityUserNavigationPaths.TARGET_CONTENT_TYPE))) {
-                collectionIds.add(targetContent.getString(AJEntityUserNavigationPaths.TARGET_COLLECTION_ID));
-            } else if (DBHelper
-                .checkContentTypeIsLesson(targetContent.getString(AJEntityUserNavigationPaths.TARGET_CONTENT_TYPE))) {
-                lessonIds.add(targetContent.getString(AJEntityUserNavigationPaths.TARGET_LESSON_ID));
-            } else if (DBHelper
-                .checkContentTypeIsResource(targetContent.getString(AJEntityUserNavigationPaths.TARGET_CONTENT_TYPE))) {
-                resourceIds.add(targetContent.getString(AJEntityUserNavigationPaths.TARGET_RESOURCE_ID));
+                suggestedContent.getString(AJEntityUserNavigationPaths.SUGGESTED_CONTENT_TYPE))) {
+                collectionIds.add(suggestedContent.getString(AJEntityUserNavigationPaths.SUGGESTED_CONTENT_ID));
+            } else if (DBHelper.checkContentTypeIsResource(
+                suggestedContent.getString(AJEntityUserNavigationPaths.SUGGESTED_CONTENT_TYPE))) {
+                resourceIds.add(suggestedContent.getString(AJEntityUserNavigationPaths.SUGGESTED_CONTENT_ID));
             }
 
         });
@@ -243,27 +219,32 @@ class FetchCourseMapLessonHandler implements DBHandler {
         }
     }
 
-    private static void parseAndMergeResponse(JsonArray response, JsonObject lessonCollResDetails, JsonObject path) {
-        final String contentType = path.getString(AJEntityUserNavigationPaths.TARGET_CONTENT_TYPE);
-        String contentId = null;
-        if (DBHelper.checkContentTypeIsLesson(contentType)) {
-            if (lessonCollResDetails.containsKey(path.getString(AJEntityUserNavigationPaths.TARGET_LESSON_ID))) {
-                contentId = path.getString(AJEntityUserNavigationPaths.TARGET_LESSON_ID);
-            }
-        } else if (DBHelper.checkContentTypeIsCollection(contentType)) {
-            if (lessonCollResDetails.containsKey(path.getString(AJEntityUserNavigationPaths.TARGET_COLLECTION_ID))) {
-                contentId = path.getString(AJEntityUserNavigationPaths.TARGET_COLLECTION_ID);
-            }
-        } else if (DBHelper.checkContentTypeIsResource(contentType)) {
-            if (lessonCollResDetails.containsKey(path.getString(AJEntityUserNavigationPaths.TARGET_RESOURCE_ID))) {
-                contentId = path.getString(AJEntityUserNavigationPaths.TARGET_RESOURCE_ID);
+    private static void parseAndMergeResponse(JsonObject response, JsonObject collResDetails, JsonObject path) {
+        final String suggestionType = path.getString(AJEntityUserNavigationPaths.SUGGESTION_TYPE);
+        final String suggestedContentSubType = path.getString(AJEntityUserNavigationPaths.SUGGESTED_CONTENT_SUBTYPE);
+        if (!(DBHelper.checkIsSystemSuggestionType(suggestionType)
+            && DBHelper.checkIsSignatureAssessment(suggestedContentSubType))) {
+            final String contentId = path.getString(AJEntityUserNavigationPaths.SUGGESTED_CONTENT_ID);
+            final JsonObject content = collResDetails.getJsonObject(contentId);
+            if (content != null) {
+                final JsonObject alternatePath = path.mergeIn(collResDetails.getJsonObject(contentId)).copy();
+                alternatePath.remove(AJEntityUserNavigationPaths.SUGGESTION_TYPE);
+                if (DBHelper.checkIsSystemSuggestionType(suggestionType)) {
+                    final JsonArray systemSuggestions =
+                        response.containsKey(AJEntityUserNavigationPaths.SYSTEM_SUGGESTIONS)
+                            ? response.getJsonArray(AJEntityUserNavigationPaths.SYSTEM_SUGGESTIONS) : new JsonArray();
+                    systemSuggestions.add(alternatePath);
+                    response.put(AJEntityUserNavigationPaths.SYSTEM_SUGGESTIONS, systemSuggestions);
+                } else if (DBHelper.checkIsTeacherSuggestionType(suggestionType)) {
+                    final JsonArray teacherSuggestions =
+                        response.containsKey(AJEntityUserNavigationPaths.TEACHER_SUGGESTIONS)
+                            ? response.getJsonArray(AJEntityUserNavigationPaths.TEACHER_SUGGESTIONS) : new JsonArray();
+                    teacherSuggestions.add(alternatePath);
+                    response.put(AJEntityUserNavigationPaths.TEACHER_SUGGESTIONS, teacherSuggestions);
+                }
             }
         }
 
-        if (contentId != null) {
-            path.mergeIn(lessonCollResDetails.getJsonObject(contentId));
-        }
-        response.add(path);
     }
 
 }
