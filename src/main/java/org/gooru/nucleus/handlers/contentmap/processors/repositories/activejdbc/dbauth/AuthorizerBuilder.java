@@ -2,6 +2,7 @@ package org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc
 
 import org.gooru.nucleus.handlers.contentmap.processors.ProcessorContext;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityBookmark;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityClass;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCourse;
 import org.gooru.nucleus.handlers.contentmap.processors.responses.ExecutionResult;
 
@@ -36,5 +37,9 @@ public final class AuthorizerBuilder {
     public static Authorizer<AJEntityCourse> buildTenantCollaboratorAuthorizer(ProcessorContext context,
         JsonArray collaborators) {
         return new TenantCollaboratorAuthorizer(context, collaborators);
+    }
+    
+    public static Authorizer<AJEntityClass> buildClassAuthorizer(ProcessorContext context) {
+        return new ClassOwnerOrCollaboratorAuthorizer(context);
     }
 }
