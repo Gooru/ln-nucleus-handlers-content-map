@@ -74,6 +74,10 @@ public final class DBHelper {
     public static String lessonIdFromContext(ProcessorContext context) {
         return context.requestHeaders().get(MessageConstants.LESSON_ID);
     }
+    
+    public static String userIdFromContext(ProcessorContext context) {
+        return readRequestParam(MessageConstants.USER_ID, context);
+    }
 
     public static void validateIdAsUUID(String validationTarget, String bundleKey) {
         if (validationTarget == null || validationTarget.isEmpty()
