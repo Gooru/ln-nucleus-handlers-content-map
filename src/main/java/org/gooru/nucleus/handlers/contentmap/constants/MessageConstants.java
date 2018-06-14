@@ -53,6 +53,7 @@ public final class MessageConstants {
     public static final String TITLE = "title";
     public static final String THUMBNAIL = "thumbnail";
     public static final String ID = "id";
+    public static final String USER_ID = "userId";
 
     private MessageConstants() {
         throw new AssertionError();

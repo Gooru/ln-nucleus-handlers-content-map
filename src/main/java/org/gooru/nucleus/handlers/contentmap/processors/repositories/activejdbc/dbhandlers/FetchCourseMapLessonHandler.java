@@ -11,6 +11,7 @@ import org.gooru.nucleus.handlers.contentmap.processors.exceptions.MessageRespon
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbauth.AuthorizerBuilder;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbhelpers.DBHelper;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.dbutils.DbHelperUtil;
+import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityClass;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCollection;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityContent;
 import org.gooru.nucleus.handlers.contentmap.processors.repositories.activejdbc.entities.AJEntityCourse;
@@ -39,8 +40,10 @@ class FetchCourseMapLessonHandler implements DBHandler {
     private String unitId;
     private String lessonId;
     private String classId;
+    private String userId;
     private List<String> collectionIds;
     private List<String> resourceIds;
+    private AJEntityClass entityClass;
 
     FetchCourseMapLessonHandler(ProcessorContext context) {
         this.context = context;
@@ -57,6 +60,8 @@ class FetchCourseMapLessonHandler implements DBHandler {
             validateLessonId();
             classId = DBHelper.classIdFromContext(context);
             validateClassId();
+            userId = DBHelper.userIdFromContext(context);
+            validateUserId();
             validateUser();
         } catch (MessageResponseWrapperException mrwe) {
             return new ExecutionResult<>(mrwe.getMessageResponse(), ExecutionResult.ExecutionStatus.FAILED);
@@ -82,6 +87,25 @@ class FetchCourseMapLessonHandler implements DBHandler {
             return new ExecutionResult<>(
                 MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString("unit.lesson.not.found")),
                 ExecutionStatus.FAILED);
+        }
+
+        if (classId != null) {
+            LazyList<AJEntityClass> classes = AJEntityClass.findBySQL(AJEntityClass.SELECT_CLASS_TO_VALIDATE, classId);
+            if (classes.isEmpty()) {
+                LOGGER.warn("Not able to find class '{}'", classId);
+                return new ExecutionResult<>(
+                    MessageResponseFactory.createNotFoundResponse(RESOURCE_BUNDLE.getString("not.found")),
+                    ExecutionResult.ExecutionStatus.FAILED);
+            }
+            this.entityClass = classes.get(0);
+        }
+
+        if (userId != null && this.entityClass != null) {
+            ExecutionResult<MessageResponse> classAuthorizer =
+                AuthorizerBuilder.buildClassAuthorizer(context).authorize(this.entityClass);
+            if (classAuthorizer.hasFailed()) {
+                return classAuthorizer;
+            }
         }
 
         LOGGER.debug("validateRequest() OK");
@@ -180,9 +204,10 @@ class FetchCourseMapLessonHandler implements DBHandler {
     private LazyList<AJEntityUserNavigationPaths> getAlternatePaths() {
         LazyList<AJEntityUserNavigationPaths> paths;
         if (classId != null) {
+            final String userId =  this.userId == null ? context.userId() : this.userId; 
             paths = AJEntityUserNavigationPaths.findBySQL(
                 AJEntityUserNavigationPaths.FETCH_ALTERNATE_PATHS_FOR_USER_IN_CLASS, courseId, unitId, lessonId,
-                context.userId(), classId);
+                userId, classId);
         } else {
             paths = AJEntityUserNavigationPaths.findBySQL(AJEntityUserNavigationPaths.FETCH_ALTERNATE_PATHS_FOR_USER,
                 courseId, unitId, lessonId, context.userId());
@@ -208,6 +233,13 @@ class FetchCourseMapLessonHandler implements DBHandler {
             return;
         }
         DBHelper.validateIdAsUUID(classId, "invalid.class");
+    }
+
+    private void validateUserId() {
+        if (userId == null) {
+            return;
+        }
+        DBHelper.validateIdAsUUID(userId, "invalid.user");
     }
 
     private void validateUser() {
